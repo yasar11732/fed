@@ -81,7 +81,7 @@ static _Bool locate_db_file(fed *f) {
     if(!success && !streq(f->pathUrls,"")) {
         strcpy(f->pathDB, f->pathUrls);
         stripfilename(f->pathDB);
-        int len = strlen(f->pathDB);
+        size_t len = strlen(f->pathDB);
         if(len + 7 < MAX_PATH) { // 1 for path separator, 6 for fed.db
             success = true;
             f->pathDB[len] = PATH_SEP;

@@ -17,7 +17,7 @@ static inline _Bool notnull(const void *p) {
 static inline void stripfilename(char *path) {
     int i;
     char *prev = NULL;
-    for(i = 0; i < MAX_PACKAGE_NAME;i++) {
+    for(i = 0; i < MAX_PATH; i++) {
         if(path[i] == PATH_SEP) {
             path[i] = '\0';
             if(notnull(prev)) {
