@@ -113,20 +113,23 @@ static _Bool init_program(fed *f)
     if(success) {
 
     }
-    
-    if(!success) {
-        if(f->fileUrls != NULL) {
-            fclose(f->fileUrls);
-        }
 
-        if(f->conSqlite != NULL) {
-            sqlite3_close(f->conSqlite);
-        }
-
-    }
     return success;
 }
 
+static _Bool cleanup_program(fed *f) {
+    
+    _Bool success = true;
+    
+    if(f->fileUrls != NULL) {
+        success = (fclose(f->fileUrls) != EOF);
+    }
 
+    if(f->conSqlite != NULL) {
+        success = (success && (sqlite3_close(f->conSqlite) == SQLITE_OK));
+    }
+
+    return success;
+}
 
 #endif

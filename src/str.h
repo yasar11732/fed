@@ -30,4 +30,8 @@ static inline void stripfilename(char *path) {
     }
 }
 
+static inline _Bool copypath(char * restrict dest, const char * restrict src) {
+    return snprintf(dest, MAX_PATH, "%s", src) < MAX_PATH;
+}
+
 #endif

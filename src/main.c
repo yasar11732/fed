@@ -22,6 +22,15 @@ int main(int argc, char *argv[])
         return usage(argv[0]);
     }
 
-    init_program(&f);
+    if(init_program(&f)) {
+
+    }
+
+    if(!cleanup_program(&f)) {
+        (void)fprintf(stderr, "Program cleanup failed."
+        "Data may be corrupted. If you encounter problems"
+        ", try deleting %s and resync your feeds", f.pathDB);
+    }
+
     return 0;
 }

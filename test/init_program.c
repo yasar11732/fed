@@ -78,6 +78,11 @@ int fclose_mock(FILE *stream)
     return 0;
 }
 
+/*
+* ===========================================
+* WARNING! NO STDLIB IMPORTS BELOW THIS POINT
+* ===========================================
+*/
 #define getenv getenv_mock
 #define fopen fopen_mock
 #define fclose fclose_mock
@@ -96,8 +101,7 @@ static void begin_test(char *name) {
         fs[i] = NULL;
         env[i] = NULL;
     }
-
-    memset(&local_f, 0, sizeof(fed));
+    memset(&local_f, 0, sizeof(local_f));
     fopen_call_count = 0;
     fclose_call_count = 0;
     open_file_count = 0;
@@ -107,6 +111,11 @@ static void begin_test(char *name) {
 };
 
 int main() {
+
+    begin_test("init_program zero initializes");
+    init_program(&local_f);
+    fed g = {0};
+    assert(memcmp(&local_f, &g, sizeof(g)) == 0);
 
     begin_test("freadable test non existing");
     fs[0] = "/a.txt";
