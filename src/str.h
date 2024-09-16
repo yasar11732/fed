@@ -16,14 +16,14 @@ static inline _Bool notnull(const void *p) {
 
 static inline void stripfilename(char *path) {
     int i;
-    char *prev = NULL;
-    for(i = 0; i < MAX_PATH; i++) {
+    int k = -1;
+    for(i = 0; i < FED_MAXPATH; i++) {
         if(path[i] == PATH_SEP) {
             path[i] = '\0';
-            if(notnull(prev)) {
-                *prev = PATH_SEP;
+            if(k != -1) {
+                path[k] = PATH_SEP;
             }
-            prev = &path[i];
+            k = i;
         } else if(path[i] == '\0') {
             break;
         }
@@ -31,7 +31,7 @@ static inline void stripfilename(char *path) {
 }
 
 static inline _Bool copypath(char * restrict dest, const char * restrict src) {
-    return snprintf(dest, MAX_PATH, "%s", src) < MAX_PATH;
+    return snprintf(dest, FED_MAXPATH, "%s", src) < FED_MAXPATH;
 }
 
 #endif
