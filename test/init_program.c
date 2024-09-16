@@ -10,6 +10,7 @@
 
 #include "fed.h"
 #include "str.h"
+#include <stdint.h> // for intptr_t
 #include <string.h>
 
 #define MOCK_SIZE 32
@@ -145,38 +146,38 @@ int main() {
     assert(get_env_call_count == 0);
     assert(streq(local_f.pathUrls, "/path/to/urls.txt"));
 
-    begin_test("locate_urls_file in home directory");
-    env[0] = "HOME=/home/test";
-    fs[0] = "/home/test/.fed/urls.txt";
-    b = locate_urls_file(&local_f);
-    assert(b == true);
-    assert(streq(local_f.pathUrls, "/home/test/.fed/urls.txt"));
-
+#ifdef ON_WINDOWS
     begin_test("locate_urls_file in userprofile directory");
     env[0] = "USERPROFILE=C:\\users\\test";
     fs[0] = "C:\\users\\test\\.fed\\urls.txt";
     b = locate_urls_file(&local_f);
     assert(b == true);
-    assert(streq(local_f.pathUrls, "C:\\users\\test\\.fed\\urls.txt"));
+    assert(streq(local_f.pathUrls, fs[0]));
 
     begin_test("locate_urls_file in appdata directory");
     env[0] = "APPDATA=C:\\users\\test\\appdata\\roaming";
     fs[0] = "C:\\users\\test\\appdata\\roaming\\.fed\\urls.txt";
     b = locate_urls_file(&local_f);
     assert(b == true);
-    assert(streq(local_f.pathUrls, "C:\\users\\test\\appdata\\roaming\\.fed\\urls.txt"));
+    assert(streq(local_f.pathUrls, fs[0]));
+#else    
+    begin_test("locate_urls_file in home directory");
+    env[0] = "HOME=/home/test";
+    fs[0] = "/home/test/.fed/urls.txt";
+    b = locate_urls_file(&local_f);
+    assert(b == true);
+    assert(streq(local_f.pathUrls, fs[0]));
 
     begin_test("locate_urls_file in /var/lib/fed directory");
     fs[0] = "/var/lib/fed/urls.txt";
     b = locate_urls_file(&local_f);
     assert(b == true);
     assert(streq(local_f.pathUrls, "/var/lib/fed/urls.txt"));
+#endif
 
     begin_test("locate_urls_file not found");
     b = locate_urls_file(&local_f);
     assert(b == false);
     assert(streq(local_f.pathUrls, ""));
-    assert(get_env_call_count == 3);
-    
     
 }

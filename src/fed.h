@@ -2,6 +2,10 @@
 #define FED_SETTINGS_H
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#define ON_WINDOWS
+#endif
+
+#ifdef ON_WINDOWS
 #include <windows.h>
 #define PATH_SEP '\\'
 #else
@@ -11,18 +15,14 @@
 #include <stdio.h> // for FILE definition
 #include "sqlite3.h"
 
-
-#ifndef MAX_PATH
-#define MAX_PATH 260u
-#endif // MAX_PATH 
-
+#define FED_MAXPATH 260
 
 #define FED_NUM_ARTICLES 32 // default value for -t switch
 
 // program context
 typedef struct {
-    char pathUrls[MAX_PATH];
-    char pathDB[MAX_PATH];
+    char pathUrls[FED_MAXPATH];
+    char pathDB[FED_MAXPATH];
     FILE *fileUrls;
     sqlite3 *conSqlite;
     unsigned int numListed;

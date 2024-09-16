@@ -16,14 +16,16 @@ static int usage(const char *progname)
 
 int main(int argc, char *argv[])
 {
-    fed f;
+    fed f = {0};
     
     if(!parse_args(&f, argc, argv)) {
         return usage(argv[0]);
     }
 
     if(init_program(&f)) {
-
+        puts("init program successfull.");
+    } else {
+        puts("init program failed.");
     }
 
     if(!cleanup_program(&f)) {
