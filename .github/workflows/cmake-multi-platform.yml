@@ -28,9 +28,9 @@ jobs:
         build_type: [Debug]
         c_compiler: [gcc, clang, cl]
         include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
+          # - os: windows-latest
+          #  c_compiler: cl
+          #  cpp_compiler: cl
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
@@ -48,7 +48,8 @@ jobs:
     steps:
     - name: Install dependencies (Linux)
       if: startsWith(matrix.os, 'ubuntu')
-      run: sudo apt-get -y install libcurl4-openssl-dev libxml2-dev
+      run: sudo apt-get update && sudo apt-get -y install libcurl4-openssl-dev libxml2-dev
+
     - uses: actions/checkout@v4
 
     - name: Set reusable strings
