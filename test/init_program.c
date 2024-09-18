@@ -1,18 +1,28 @@
 /*
 * Order of imports is very important here.
 * We don't want to override standard library
-* definitions with our own mock function.
+* definitions with our mocks.
 */
+
+// important for assert to work
 #ifdef NDEBUG
 #undef NDEBUG
 #endif
+
 #include <assert.h>
 
 #include "fed.h"
 #include "str.h"
+#include "db.h"
 #include <stdint.h> // for intptr_t
 #include <string.h>
+#include <curl/curl.h>
 
+/*
+* =========================
+* GLOBALS
+* =========================
+*/
 #define MOCK_SIZE 32
 // mock file system data (null terminated)
 char *fs[MOCK_SIZE];
@@ -25,6 +35,18 @@ int fclose_call_count = 0;
 int get_env_call_count = 0;
 fed local_f;
 
+CURLcode global_init_ret;
+int global_init_call_count = 0;
+int global_cleanup_call_count = 0;
+
+int sqlite3_open_call_count = 0;
+int sqlite3_close_call_count = 0;
+
+/*
+* ======================
+* MOCK PROCEDURES
+* ======================
+*/
 char *getenv_mock(const char *name)
 {
     get_env_call_count++;
@@ -75,10 +97,37 @@ int fclose_mock(FILE *stream)
 {
     (void)stream;
     fclose_call_count++;
-    open_file_count--;
+    
+    if(stream != NULL)
+        open_file_count--;
+    
     return 0;
 }
 
+CURLcode curl_global_init_mock(long flags) {
+    global_init_call_count++;
+    return global_init_ret;
+}
+
+void curl_global_cleanup_mock(void) {
+    global_cleanup_call_count++;
+}
+
+_Bool initialize_db_mock(fed *f) {
+    return true;
+}
+
+CURLcode sqlite3_open_mock(char *filename, sqlite3 **ppDB) {
+    sqlite3_open_call_count++;
+    intptr_t p = (intptr_t)NULL;
+    *ppDB = (sqlite3*)~p;
+    return CURLE_OK;
+}
+
+int sqlite3_close_mock(sqlite3 *p) {
+    sqlite3_close_call_count++;
+    return SQLITE_OK;
+}
 /*
 * ===========================================
 * WARNING! NO STDLIB IMPORTS BELOW THIS POINT
@@ -87,6 +136,11 @@ int fclose_mock(FILE *stream)
 #define getenv getenv_mock
 #define fopen fopen_mock
 #define fclose fclose_mock
+#define curl_global_init curl_global_init_mock
+#define curl_global_cleanup curl_global_cleanup_mock
+#define initialize_db initialize_db_mock
+#define sqlite3_open sqlite3_open_mock
+#define sqlite3_close sqlite3_close_mock
 
 #include "init_program.h"
 
@@ -103,6 +157,14 @@ static void begin_test(char *name) {
         env[i] = NULL;
     }
     memset(&local_f, 0, sizeof(local_f));
+    
+    global_init_call_count = 0;
+    global_cleanup_call_count = 0;
+    global_init_ret = CURLE_OK;
+
+    sqlite3_open_call_count = 0;
+    sqlite3_close_call_count = 0;
+
     fopen_call_count = 0;
     fclose_call_count = 0;
     open_file_count = 0;
@@ -180,4 +242,19 @@ int main() {
     assert(b == false);
     assert(streq(local_f.pathUrls, ""));
     
+    begin_test("init/cleanup");
+    strcpy(local_f.pathUrls,"test/path/urls.txt");
+    fs[0] = "test/path/urls.txt";
+    b = init_program(&local_f);
+    assert(b == true);
+    assert(global_init_call_count == 1);
+    assert(sqlite3_open_call_count == 1);
+    assert(local_f.fileUrls != NULL);
+    assert(local_f.conSqlite != NULL);
+    b = cleanup_program(&local_f);
+    assert(b == true);
+    assert(global_cleanup_call_count == 1);
+    assert(sqlite3_close_call_count == 1);
+    assert(open_file_count == 0);
+
 }

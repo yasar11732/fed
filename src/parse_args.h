@@ -12,30 +12,32 @@
 static _Bool parse_args(fed *f,int argc, char *argv[])
 {
     int i;
-    for(i = 1; i < argc; i++) {
+    _Bool success = notnull(f);
+
+    for(i = 1; success && (i < argc); i++) {
         if(streq("-u", argv[i]) && (i+1 < argc)) {
             i++;
-            strncpy(f->pathUrls, argv[i], FED_MAXPATH);
+            success = copypath(f->pathUrls, argv[i]);
         } else if(streq("-d", argv[i]) && (i+1 < argc)) {
             i++;
-            strncpy(f->pathDB, argv[i], FED_MAXPATH);
+            success = copypath(f->pathDB, argv[i]);
         } else if(streq("-t", argv[i]) && (i+1 < argc)) {
             i++;
             long t = strtol(argv[i], (char**)NULL, 10);
             if(t > 0 && t <= 32767) { // a signed int is guaranteed to this big  
                 f->numListed = (int)t;
             } else {
-                return false;
+                success = false;
             }
         } else if(streq("-asc", argv[i])) {
             f->orderListed = ASC;
         } else if(streq("-desc", argv[i])) {
             f->orderListed = DESC;
         } else {
-            return false;
+            success = false;
         }
     }
-    return true;
+    return success;
 }
 
 

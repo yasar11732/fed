@@ -13,7 +13,6 @@ static inline _Bool notnull(const void *p) {
     return (p != NULL);
 }
 
-
 static inline void stripfilename(char *path) {
     int i;
     int k = -1;
