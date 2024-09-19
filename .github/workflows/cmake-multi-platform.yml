@@ -50,10 +50,11 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu')
       run: sudo apt-get update && sudo apt-get -y install libcurl4-openssl-dev libxml2-dev
     
-    - name: Install dependencies (Windows)
+    - uses: msys2/setup-msys2@v2
       if: startsWith(matrix.os, 'windows')
-      run: pacman -S curl libxml2
-      shell: msys2 {0}
+      with:
+        update: true
+        install: curl libxml2
       
     - uses: actions/checkout@v4
 
