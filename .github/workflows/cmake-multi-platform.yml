@@ -52,7 +52,8 @@ jobs:
     
     - name: Install dependencies (Windows)
       if: startsWith(matrix.os, 'windows')
-      run: pacman -S curl libmlx2
+      run: pacman -S curl libxml2
+      shell: msys2 {0}
       
     - uses: actions/checkout@v4
 
