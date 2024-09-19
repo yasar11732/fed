@@ -52,7 +52,7 @@ jobs:
     
     - name: Install dependencies (Windows)
       if: startsWith(matrix.os, 'windows')
-      run: vcpkg install curl libxml2
+      run: pacman -S curl libmlx2
       
     - uses: actions/checkout@v4
 
