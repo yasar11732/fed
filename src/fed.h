@@ -31,4 +31,13 @@ typedef struct {
     } orderListed;
 } fed;
 
+static void init_fed(fed *f) {
+    f->pathUrls[0] = '\0';
+    f->pathDB[0] = '\0';
+    f->fileUrls = NULL;
+    f->conSqlite = NULL;
+    f->numListed = 0;
+    f->orderListed = DESC;
+}
+
 #endif

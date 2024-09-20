@@ -78,5 +78,9 @@ int main()
     assert(strlen(buf1) == (FED_MAXPATH - 1));
     assert(buf1[FED_MAXPATH] == '\0');
     assert(buf1[FED_MAXPATH+1] == '\0');
+
+    printf("Testing strprefix");
+    assert(strprefix("startsWith correct value","startsWith"));
+    assert(!strprefix("does not startsWith correct value","startsWith"));
     return 0;
 }
