@@ -34,11 +34,11 @@ static inline void stripfilename(char *path) {
     }
 }
 
-static inline bool copypath(char * restrict dest, const char * restrict src) {
+static inline bool copypath(char * dest, const char * src) {
     return snprintf(dest, FED_MAXPATH, "%s", src) < FED_MAXPATH;
 }
 
-static inline bool copyurl(char * restrict dest, const char * restrict src) {
+static inline bool copyurl(char * dest, const char * src) {
     return snprintf(dest, FED_MAXURL, "%s", src) < FED_MAXURL;
 }
 
