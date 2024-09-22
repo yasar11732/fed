@@ -8,9 +8,9 @@
 #include <stdbool.h>
 #include <curl/curl.h>
 
-static _Bool freadable(const char *path) {
+static bool freadable(const char *path) {
     
-    _Bool result = notnull(path);
+    bool result = notnull(path);
     FILE *f;
 
     // opening the file is pretty portable
@@ -28,9 +28,9 @@ static _Bool freadable(const char *path) {
     return result;
 }
 
-static _Bool find_in_env(fed *f, const char *env)
+static bool find_in_env(fed *f, const char *env)
 {
-    _Bool success = notnull(f) && notnull(env);
+    bool success = notnull(f) && notnull(env);
     const char *envstr;
 
     if(success) {
@@ -53,14 +53,14 @@ static _Bool find_in_env(fed *f, const char *env)
     return success;
 }
 
-static _Bool locate_urls_file(fed *f)
+static bool locate_urls_file(fed *f)
 {    
     // if path explicitly defined on cmd
     // we don't do anything.
     if(f == NULL)
         return false;
     
-    _Bool success = !streq(f->pathUrls,"");
+    bool success = !streq(f->pathUrls,"");
     
 #ifdef ON_WINDOWS
     if(!success) {
@@ -88,9 +88,9 @@ static _Bool locate_urls_file(fed *f)
     return success;
 }
 
-static _Bool open_urls_file(fed *f)
+static bool open_urls_file(fed *f)
 {
-    _Bool success = notnull(f);
+    bool success = notnull(f);
 
     if(success) {
         success = locate_urls_file(f);
@@ -113,12 +113,12 @@ static _Bool open_urls_file(fed *f)
     return success;
 }
 
-static _Bool locate_db_file(fed *f) {
+static bool locate_db_file(fed *f) {
     
     if(f == NULL)
         return false;
     
-    _Bool success = !streq(f->pathDB,"");
+    bool success = !streq(f->pathDB,"");
     if(!success && !streq(f->pathUrls,"")) {
         copypath(f->pathDB, f->pathUrls);
         stripfilename(f->pathDB);
@@ -132,9 +132,9 @@ static _Bool locate_db_file(fed *f) {
     return success;
 }
 
-static _Bool open_db_file(fed *f) {
+static bool open_db_file(fed *f) {
     
-    _Bool success = notnull(f);
+    bool success = notnull(f);
     
     if(success) {
         success = locate_db_file(f);
@@ -149,9 +149,9 @@ static _Bool open_db_file(fed *f) {
 
 
 
-static _Bool init_program(fed *f)
+static bool init_program(fed *f)
 {
-    _Bool success = notnull(f);
+    bool success = notnull(f);
     
     if(success) {
         success = open_urls_file(f);
@@ -172,9 +172,9 @@ static _Bool init_program(fed *f)
     return success;
 }
 
-static _Bool cleanup_program(fed *f) {
+static bool cleanup_program(fed *f) {
     
-    _Bool success = true;
+    bool success = true;
 
     (void)curl_global_cleanup();
 

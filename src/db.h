@@ -4,10 +4,10 @@
 #include "str.h"
 #include <stdbool.h>
 
-static _Bool initialize_db(fed *f) {
+static bool initialize_db(fed *f) {
     char *errmsg = NULL;
 
-    _Bool success = notnull(f) && notnull(f->conSqlite);
+    bool success = notnull(f) && notnull(f->conSqlite);
 
     if(success) {
         success = sqlite3_exec(f->conSqlite, "PRAGMA synchronous = NORMAL;", NULL, NULL, &errmsg) == SQLITE_OK;

@@ -1,0 +1,52 @@
+﻿{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "ninja-multi-vcpkg",
+            "generator": "Ninja Multi-Config",
+			"binaryDir": "${sourceDir}/builds/${presetName}",
+            "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "ninja-multi-vcpkg-test",
+            "inherits":"ninja-multi-vcpkg",
+            "cacheVariables": {
+                "BUILD_TESTS":"ON"
+            }
+        }
+        
+    ],
+	"buildPresets": [
+        {
+            "name": "ninja-vcpkg-debug",
+            "configurePreset": "ninja-multi-vcpkg",
+            "displayName": "Build (Debug)",
+            "configuration": "Debug"
+        },
+        {
+            "name": "ninja-vcpkg-release",
+            "configurePreset": "ninja-multi-vcpkg",
+            "displayName": "Build (Release)",
+            "configuration": "Release"
+        },
+        {
+            "name": "ninja-vcpkg-test",
+            "configurePreset": "ninja-multi-vcpkg-test",
+            "displayName": "Build (Test)",
+            "configuration": "RelWithDebInfo"
+        }
+	],
+    "testPresets": [
+        {
+            "name":"test-ninja-vcpkg",
+            "configurePreset": "ninja-multi-vcpkg-test",
+            "displayName": "Test",
+            "configuration": "RelWithDebInfo"
+        }
+    ]
+}

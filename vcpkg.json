@@ -1,0 +1,13 @@
+{
+	"dependencies": [
+		{
+			"name":"curl",
+			"default-features":false,
+			"features":["schannel","http2","brotli"]
+		},
+		{
+			"name":"libxml2"
+		}
+	],
+	"builtin-baseline": "3426db05b996481ca31e95fff3734cf23e0f51bc"
+}

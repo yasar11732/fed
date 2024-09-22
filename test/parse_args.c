@@ -34,7 +34,7 @@ int main()
     fputs(".", stdout);
     char *test1[] = {"progname"};
     reset_fed(f);
-    _Bool res = parse_args(f, _countof(test1), test1);
+    bool res = parse_args(f, _countof(test1), test1);
     assert(res == true);
     assert(memcmp(f, e, sizeof(*f)) == 0);
 

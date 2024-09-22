@@ -11,7 +11,7 @@ int main() {
     sqlite3_stmt *res;
     fed f;
     init_fed(&f);
-    _Bool success;
+    bool success;
     
     success = sqlite3_open(":memory:",&f.conSqlite) == SQLITE_OK;
     assert(success);

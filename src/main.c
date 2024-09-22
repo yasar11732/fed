@@ -16,7 +16,8 @@ static int usage(const char *progname)
 
 int main(int argc, char *argv[])
 {
-    fed f = {0};
+    fed f;
+    init_fed(&f);
     
     if(!parse_args(&f, argc, argv)) {
         return usage(argv[0]);

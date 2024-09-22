@@ -9,10 +9,10 @@
 #include <stdbool.h>
 #include <limits.h>
 
-static _Bool parse_args(fed *f,int argc, char *argv[])
+static bool parse_args(fed *f,int argc, char *argv[])
 {
     int i;
-    _Bool success = notnull(f);
+    bool success = notnull(f);
 
     for(i = 1; success && (i < argc); i++) {
         if(streq("-u", argv[i]) && (i+1 < argc)) {

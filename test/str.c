@@ -73,7 +73,7 @@ int main()
     memset(buf2,'a',sizeof(buf2));
     buf2[FED_MAXPATH+2] = '\0';
 
-    _Bool cpresult = copypath(buf1, buf2);
+    bool cpresult = copypath(buf1, buf2);
     assert(!cpresult);
     assert(strlen(buf1) == (FED_MAXPATH - 1));
     assert(buf1[FED_MAXPATH] == '\0');

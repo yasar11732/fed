@@ -113,7 +113,7 @@ void curl_global_cleanup_mock(void) {
     global_cleanup_call_count++;
 }
 
-_Bool initialize_db_mock(fed *f) {
+bool initialize_db_mock(fed *f) {
     return true;
 }
 
@@ -183,7 +183,7 @@ int main() {
     begin_test("freadable test non existing");
     fs[0] = "/a.txt";
     fs[1] = "/b.txt";
-    _Bool b = freadable("/c.txt");
+    bool b = freadable("/c.txt");
     assert(b == false);
     assert(fopen_call_count == 1);
     assert(fclose_call_count == 0);
