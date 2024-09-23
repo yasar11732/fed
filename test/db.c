@@ -49,7 +49,12 @@ int main() {
     success = sqlite3_step(res) == SQLITE_ROW;
     assert(success);
 
-    const char *sql = sqlite3_column_text(res, 0);
+    /*
+    * Cast is safe because
+    * a) sql should contain chars in 0-127 range
+    * b) if it doesn't assert will fail anyways 
+    */
+    const char *sql = (char *)sqlite3_column_text(res, 0);
     assert(strprefix(sql, "CREATE UNIQUE INDEX"));
 
     sqlite3_finalize(res);
@@ -62,7 +67,10 @@ int main() {
     success = sqlite3_step(res) == SQLITE_ROW;
     assert(success);
 
-    sql = sqlite3_column_text(res, 0);
+    /**
+     * See above reasoning for cast
+     */
+    sql = (char *)sqlite3_column_text(res, 0);
     assert(strprefix(sql, "CREATE UNIQUE INDEX"));
 
     sqlite3_finalize(res);
@@ -75,7 +83,10 @@ int main() {
     success = sqlite3_step(res) == SQLITE_ROW;
     assert(success);
 
-    sql = sqlite3_column_text(res, 0);
+    /*
+    * See above reasoning for cast
+    */
+    sql = (char *)sqlite3_column_text(res, 0);
     assert(strprefix(sql, "CREATE INDEX"));
 
     sqlite3_finalize(res);

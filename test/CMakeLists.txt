@@ -2,12 +2,16 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
 if(NOT MSVC AND CMAKE_BUILD_TYPE MATCHES DEBUG)
-add_compile_options(-fsanitize=address -fsanitize=undefined)
-add_link_options(-fsanitize=address -fsanitize=undefined)
+    add_compile_options(-fsanitize=address -fsanitize=undefined)
+    add_link_options(-fsanitize=address -fsanitize=undefined)
 endif()
 
 # linking everthing with curl b
 link_libraries(CURL::libcurl)
+
+if(NOT MSVC)
+add_compile_options(-Wno-unused-function)
+endif()
 
 add_executable(parse_args_test parse_args.c)
 add_executable(str_test str.c)

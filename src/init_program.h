@@ -11,7 +11,7 @@
 static bool freadable(const char *path) {
     
     bool result = notnull(path);
-    FILE *f;
+    FILE *f = NULL;
 
     // opening the file is pretty portable
     // way to check if file exists
@@ -31,7 +31,7 @@ static bool freadable(const char *path) {
 static bool find_in_env(fed *f, const char *env)
 {
     bool success = notnull(f) && notnull(env);
-    const char *envstr;
+    const char *envstr = NULL;
 
     if(success) {
         envstr = getenv(env);
@@ -40,9 +40,9 @@ static bool find_in_env(fed *f, const char *env)
     
     if(success) {
 #ifdef ON_WINDOWS
-        if(snprintf(f->pathUrls, FED_MAXPATH, "%s\\.fed\\urls.txt", envstr) < FED_MAXPATH) {
+        if(copypath2(f->pathUrls, envstr, "\\.fed\\urls.txt")) {
 #else
-        if(snprintf(f->pathUrls, FED_MAXPATH, "%s/.fed/urls.txt", envstr) < FED_MAXPATH) {
+        if(copypath2(f->pathUrls, envstr, "/.fed/urls.txt")) {
 #endif
             if(freadable(f->pathUrls)) {
                 success = true;

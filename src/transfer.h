@@ -33,7 +33,8 @@ static inline bool curl_ok(CURLcode c) {
 static bool add_transfer(CURLM *mh, char *url) {
     bool success = notnull(mh) && notnull(url);
     CURL *eh = NULL;
-    transfer_t *t;
+    transfer_t *t = NULL;
+    
     if(success) {
         success = notnull(t = new_transfer(url));
     }

@@ -13,11 +13,12 @@
 
 #include "fed.h"
 #include "str.h"
-#include "db.h"
 #include <stdint.h> // for intptr_t
 #include <string.h>
 #include <curl/curl.h>
 
+// to prevent db.h to be included later
+#define FEED_DB_H
 /*
 * =========================
 * GLOBALS
@@ -25,9 +26,9 @@
 */
 #define MOCK_SIZE 32
 // mock file system data (null terminated)
-char *fs[MOCK_SIZE];
+char *fs_mocks[MOCK_SIZE];
 // mock environment data (null terminated)
-char *env[MOCK_SIZE]; 
+char *env_mocks[MOCK_SIZE]; 
 
 int open_file_count = 0;
 int fopen_call_count = 0;
@@ -54,7 +55,7 @@ char *getenv_mock(const char *name)
 
     int i;
     for(i = 0; i < MOCK_SIZE; i++) {
-        char *e = env[i];
+        char *e = env_mocks[i];
 
         if(e == NULL) {
             break;
@@ -76,7 +77,7 @@ FILE *fopen_mock(const char * restrict filename, const char * restrict mode)
     int i;
     for(i = 0; i < MOCK_SIZE; i++) {
         
-        char *mockfile = fs[i];
+        char *mockfile = fs_mocks[i];
 
         if(mockfile == NULL) {
             break;
@@ -105,6 +106,7 @@ int fclose_mock(FILE *stream)
 }
 
 CURLcode curl_global_init_mock(long flags) {
+    (void)flags;
     global_init_call_count++;
     return global_init_ret;
 }
@@ -114,10 +116,13 @@ void curl_global_cleanup_mock(void) {
 }
 
 bool initialize_db_mock(fed *f) {
+    (void)f;
     return true;
 }
 
 CURLcode sqlite3_open_mock(char *filename, sqlite3 **ppDB) {
+    (void)filename;
+
     sqlite3_open_call_count++;
     intptr_t p = (intptr_t)NULL;
     *ppDB = (sqlite3*)~p;
@@ -125,6 +130,7 @@ CURLcode sqlite3_open_mock(char *filename, sqlite3 **ppDB) {
 }
 
 int sqlite3_close_mock(sqlite3 *p) {
+    (void)p;
     sqlite3_close_call_count++;
     return SQLITE_OK;
 }
@@ -153,8 +159,8 @@ static void begin_test(char *name) {
     int i;
     
     for(i = 0; i < MOCK_SIZE; i++) {
-        fs[i] = NULL;
-        env[i] = NULL;
+        fs_mocks[i] = NULL;
+        env_mocks[i] = NULL;
     }
     memset(&local_f, 0, sizeof(local_f));
     
@@ -171,7 +177,7 @@ static void begin_test(char *name) {
     get_env_call_count = 0;
     puts(name);
 
-};
+}
 
 int main() {
 
@@ -181,8 +187,8 @@ int main() {
     assert(memcmp(&local_f, &g, sizeof(g)) == 0);
 
     begin_test("freadable test non existing");
-    fs[0] = "/a.txt";
-    fs[1] = "/b.txt";
+    fs_mocks[0] = "/a.txt";
+    fs_mocks[1] = "/b.txt";
     bool b = freadable("/c.txt");
     assert(b == false);
     assert(fopen_call_count == 1);
@@ -190,8 +196,8 @@ int main() {
     assert(open_file_count == 0);
 
     begin_test("freadable test existing");
-    fs[0] = "/a.txt";
-    fs[1] = "/b.txt";
+    fs_mocks[0] = "/a.txt";
+    fs_mocks[1] = "/b.txt";
     b = freadable("/a.txt");
     assert(b == true);
     assert(fopen_call_count == 1);
@@ -210,28 +216,28 @@ int main() {
 
 #ifdef ON_WINDOWS
     begin_test("locate_urls_file in userprofile directory");
-    env[0] = "USERPROFILE=C:\\users\\test";
-    fs[0] = "C:\\users\\test\\.fed\\urls.txt";
+    env_mocks[0] = "USERPROFILE=C:\\users\\test";
+    fs_mocks[0] = "C:\\users\\test\\.fed\\urls.txt";
     b = locate_urls_file(&local_f);
     assert(b == true);
-    assert(streq(local_f.pathUrls, fs[0]));
+    assert(streq(local_f.pathUrls, fs_mocks[0]));
 
     begin_test("locate_urls_file in appdata directory");
-    env[0] = "APPDATA=C:\\users\\test\\appdata\\roaming";
-    fs[0] = "C:\\users\\test\\appdata\\roaming\\.fed\\urls.txt";
+    env_mocks[0] = "APPDATA=C:\\users\\test\\appdata\\roaming";
+    fs_mocks[0] = "C:\\users\\test\\appdata\\roaming\\.fed\\urls.txt";
     b = locate_urls_file(&local_f);
     assert(b == true);
-    assert(streq(local_f.pathUrls, fs[0]));
+    assert(streq(local_f.pathUrls, fs_mocks[0]));
 #else    
     begin_test("locate_urls_file in home directory");
-    env[0] = "HOME=/home/test";
-    fs[0] = "/home/test/.fed/urls.txt";
+    env_mocks[0] = "HOME=/home/test";
+    fs_mocks[0] = "/home/test/.fed/urls.txt";
     b = locate_urls_file(&local_f);
     assert(b == true);
-    assert(streq(local_f.pathUrls, fs[0]));
+    assert(streq(local_f.pathUrls, fs_mocks[0]));
 
     begin_test("locate_urls_file in /var/lib/fed directory");
-    fs[0] = "/var/lib/fed/urls.txt";
+    fs_mocks[0] = "/var/lib/fed/urls.txt";
     b = locate_urls_file(&local_f);
     assert(b == true);
     assert(streq(local_f.pathUrls, "/var/lib/fed/urls.txt"));
@@ -244,7 +250,7 @@ int main() {
     
     begin_test("init/cleanup");
     strcpy(local_f.pathUrls,"test/path/urls.txt");
-    fs[0] = "test/path/urls.txt";
+    fs_mocks[0] = "test/path/urls.txt";
     b = init_program(&local_f);
     assert(b == true);
     assert(global_init_call_count == 1);

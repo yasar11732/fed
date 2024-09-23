@@ -2,7 +2,7 @@
 #define FED_TRANSFER_MEM_H
 
 /*
-* Functions related to allocating and freeing transfers
+* Functions responsible for managing transfer allocation and deallocation.
 */
 
 #include "fed.h"
@@ -29,7 +29,7 @@ static inline uint32_t setBit(uint32_t val, unsigned int bit) {
 static transfer_t *new_transfer(char *url) {
     unsigned int bit;
 	
-    // early exit if there is no free transfer
+    // Implement an early exit if no free transfer is available.
 	if(alloc_mask == 0)
 		return NULL;
 	
@@ -45,7 +45,7 @@ static transfer_t *new_transfer(char *url) {
 		}
 	}
 
-    // never reached, probably
+    // This code path is likely never executed.
     return NULL;
 }
 

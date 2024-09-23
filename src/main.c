@@ -28,13 +28,13 @@ int main(int argc, char *argv[])
         // TODO ...
 
     } else if(f.fileUrls == NULL) {
-        (void)fputs("Couldn't find or open urls file. "
+        (void)fputs("Unable to locate or open the URLs file. Ensure that "
 #ifdef ON_WINDOWS
-        "make sure %%USERPROFILE%%\\.fed\\urls.txt exists and readable "
+        "%%USERPROFILE%%\\.fed\\urls.txt "
 #else
-        "make sure ~/.fed/urls.txt exists and readable "
+        "~/.fed/urls.txt "
 #endif
-        "or specify another path with -u option.\r\n", stderr);
+        "exists and is readable, or specify an alternative path using the -u option.\r\n", stderr);
         (void)usage(argv[0]);
     }
 

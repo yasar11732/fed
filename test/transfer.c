@@ -3,6 +3,7 @@
 #endif
 
 #include <assert.h>
+#include <stdint.h>
 #include "fed.h"
 #include "str.h"
 
@@ -34,6 +35,7 @@ CURL *curl_easy_init_mock() {
 }
 
 CURLcode curl_easy_setopt_mock(CURL *curl, CURLoption option, ...) {
+    (void)curl;
     va_list arg;
     va_start(arg, option);
 
@@ -90,12 +92,12 @@ CURLMcode curl_multi_add_handle_mock(CURLM *mh, CURL *eh) {
 }
 
 void curl_easy_cleanup_mock(CURL *curl) {
-
+    (void)curl;
 }
 
-
+#undef curl_easy_setopt
 #define curl_easy_init curl_easy_init_mock
-#define curl_easy_setopt curl_easy_setopt_mock
+#define curl_easy_setopt(handle, key, value) curl_easy_setopt_mock(handle, key, value)
 #define curl_multi_add_handle curl_multi_add_handle_mock
 #define curl_easy_cleanup curl_easy_cleanup_mock
 

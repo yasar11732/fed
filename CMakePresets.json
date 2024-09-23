@@ -46,7 +46,7 @@
             "name": "ninja-vcpkg-test",
             "configurePreset": "ninja-multi-vcpkg-test",
             "displayName": "Build (Test)",
-            "configuration": "RelWithDebInfo"
+            "configuration": "Debug"
         },
         {
             "name": "devel",
@@ -60,7 +60,7 @@
             "name":"test-ninja-vcpkg",
             "configurePreset": "ninja-multi-vcpkg-test",
             "displayName": "Test",
-            "configuration": "RelWithDebInfo"
+            "configuration": "Debug"
         },
         {
             "name": "devel",
