@@ -18,6 +18,14 @@
             "cacheVariables": {
                 "BUILD_TESTS":"ON"
             }
+        },{
+            "name": "devel",
+            "inherits":"ninja-multi-vcpkg",
+            "binaryDir": "$env{APPDATA}/${sourceDirName}/${presetName}",
+            "cacheVariables": {
+                "BUILD_TESTS":"ON",
+                "CMAKE_INSTALL_PREFIX":"C:\\fed"
+            }
         }
         
     ],
@@ -39,6 +47,12 @@
             "configurePreset": "ninja-multi-vcpkg-test",
             "displayName": "Build (Test)",
             "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "devel",
+            "configurePreset": "devel",
+            "displayName": "Build (Devel)",
+            "configuration": "Debug"
         }
 	],
     "testPresets": [
@@ -47,6 +61,11 @@
             "configurePreset": "ninja-multi-vcpkg-test",
             "displayName": "Test",
             "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "devel",
+            "configurePreset": "devel",
+            "displayName": "Test (Devel)"
         }
     ]
 }

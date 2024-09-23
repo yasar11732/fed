@@ -21,10 +21,9 @@
 #define FED_NUMARTICLES 32u // default value for -t switch
 #define FED_MAXURL 512u
 #define FED_MAXDATA 0x01000000ul
-#define FED_MAXPARALLEL 32u
+#define FED_MAXPARALLEL 32u // If you change this, you must fix transfer_mem.h as it assumes this is 32
 
 typedef struct {
-    bool inUse;
     size_t cbData;
     char url[FED_MAXURL];
     char data[FED_MAXDATA];
@@ -52,7 +51,7 @@ static inline void init_fed(fed *f) {
 }
 
 static inline void init_transfer(transfer_t *t) {
-    *t = (transfer_t){false, 0, {'\0'}, {'\0'}};
+    *t = (transfer_t){0, {'\0'}, {'\0'}};
 }
 
 #endif
