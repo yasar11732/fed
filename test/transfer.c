@@ -21,7 +21,7 @@ typedef struct {
     long maxredirs;
     long connecttimeout;
     
-    char redirprotocols[50];
+    char protocols[50];
     char useragent[256];
     char url[FED_MAXURL];
 } my_curl_options_t;
@@ -53,8 +53,8 @@ CURLcode curl_easy_setopt_mock(CURL *curl, CURLoption option, ...) {
         case CURLOPT_FOLLOWLOCATION:
             global_options.followlocation = va_arg(arg, long);
             break;
-        case CURLOPT_REDIR_PROTOCOLS_STR:
-            strcpy(global_options.redirprotocols, va_arg(arg, char *));
+        case CURLOPT_PROTOCOLS_STR:
+            strcpy(global_options.protocols, va_arg(arg, char *));
             break;
         case CURLOPT_AUTOREFERER:
             global_options.autoreferer = va_arg(arg, long);
@@ -77,7 +77,7 @@ CURLcode curl_easy_setopt_mock(CURL *curl, CURLoption option, ...) {
 }
 
 int curl_multi_add_handle_count = 0;
-const CURLM *mycurlm = (CURLM *)0xCAFEBABE;
+CURLM *mycurlm = (CURLM *)~(intptr_t)NULL;
 
 CURLMcode curl_multi_add_handle_mock(CURLM *mh, CURL *eh) {
     (void)eh;
@@ -112,7 +112,7 @@ int main(void) {
     assert(global_options.callback == write_cb);
     assert(global_options.timeout == 20L);
     assert(global_options.followlocation == 1L);
-    assert(streq(global_options.redirprotocols, "http,https"));
+    assert(streq(global_options.protocols, "http,https"));
     assert(global_options.autoreferer == 1L);
     assert(global_options.maxredirs == 10L);
     assert(global_options.connecttimeout == 2000L);

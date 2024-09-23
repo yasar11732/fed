@@ -60,7 +60,7 @@ static bool add_transfer(CURLM *mh, char *url) {
         */
        (void)curl_easy_setopt(eh, CURLOPT_TIMEOUT, 20L);
        (void)curl_easy_setopt(eh, CURLOPT_FOLLOWLOCATION, 1L);
-       (void)curl_easy_setopt(eh, CURLOPT_REDIR_PROTOCOLS_STR, "http,https");
+       (void)curl_easy_setopt(eh, CURLOPT_PROTOCOLS_STR, "http,https");
        (void)curl_easy_setopt(eh, CURLOPT_AUTOREFERER, 1L);
        (void)curl_easy_setopt(eh, CURLOPT_MAXREDIRS, 10L);
        (void)curl_easy_setopt(eh, CURLOPT_CONNECTTIMEOUT_MS, 2000L);
