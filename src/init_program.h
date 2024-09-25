@@ -22,7 +22,9 @@ static bool freadable(const char *path) {
     }
 
     if(result) {
-        fclose(f);
+        // we don't care if fclose fails here
+        // we didn't modify the file
+        (void)fclose(f);
     }
 
     return result;

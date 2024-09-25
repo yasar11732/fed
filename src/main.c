@@ -1,6 +1,10 @@
 
+#include "fed.h"
 #include "parse_args.h"
 #include "init_program.h"
+
+#include <stdio.h>
+#include <stddef.h>
 
 
 static int usage(const char *progname)

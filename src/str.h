@@ -127,7 +127,7 @@ static inline bool freadurl(char *dest, FILE *f) {
         *    and is not newline-terminated, verify that the end of the
         *    file has been reached.
         */
-        success = (dest[FED_MAXURL-1] != '\0') || (dest[FED_MAXURL-1] == '\n') || feof(f);
+        success = (dest[FED_MAXURL-1] != '\0') || (dest[FED_MAXURL-2] == '\n') || feof(f);
 
 
         /*
