@@ -179,7 +179,7 @@ static void begin_test(char *name) {
 
 }
 
-int main() {
+int main(void) {
 
     begin_test("init_program zero initializes");
     init_program(&local_f);

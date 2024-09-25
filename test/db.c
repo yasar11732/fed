@@ -7,7 +7,7 @@
 #include "sqlite3.h"
 #include <assert.h>
 
-int main() {
+int main(void) {
     sqlite3_stmt *res;
     fed f;
     init_fed(&f);

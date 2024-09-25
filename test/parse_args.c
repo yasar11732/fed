@@ -17,7 +17,7 @@ static void reset_fed(fed *f)
     memset(f, 0, sizeof(*f));
 }
 
-int main()
+int main(void)
 {
 
     printf("Testing parse_args ");

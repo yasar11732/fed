@@ -29,7 +29,7 @@ typedef struct {
 
 my_curl_options_t global_options;
 
-CURL *curl_easy_init_mock() {
+CURL *curl_easy_init_mock(void) {
     intptr_t p = (intptr_t)NULL;
     return (CURL*)~p;
 }

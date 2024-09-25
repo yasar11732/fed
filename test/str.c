@@ -6,7 +6,7 @@
 
 #include <assert.h>
 #include <stdio.h>
-int main()
+int main(void)
 {
     printf("TESTING streq ");
     fputs(".",stdout);
@@ -91,7 +91,7 @@ int main()
     assert(pathncat(buf, 1, "/test/1"));
     assert(streq(buf, "/test/1"));
 
-    
+
 
 
     return 0;

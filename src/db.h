@@ -67,7 +67,9 @@ static bool initialize_db(fed *f) {
     }
 
     if(notnull(errmsg)) {
-        fprintf(stderr, "sqlite3 error: %s", errmsg);
+        // no need to check fprintf result, as we can do
+        // nothing about it.
+        (void)fprintf(stderr, "sqlite3 error: %s", errmsg);
         sqlite3_free(errmsg);
     }
 

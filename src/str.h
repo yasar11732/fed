@@ -20,14 +20,14 @@ static inline bool notnull(const void *p) {
 
 static inline void stripfilename(char *path) {
     unsigned int i;
-    int k = -1;
+    char *prev = NULL;
     for(i = 0; i < FED_MAXPATH; i++) {
         if(path[i] == PATH_SEP) {
             path[i] = '\0';
-            if(k != -1) {
-                path[k] = PATH_SEP;
+            if(prev != NULL) {
+                *prev = PATH_SEP;
             }
-            k = i;
+            prev = &path[i];
         } else if(path[i] == '\0') {
             break;
         }
@@ -61,7 +61,8 @@ static inline bool pathncat(char *dest, size_t argc, ...)
                 left--;
             }
 
-
+            // this strcpy is safe because we
+            // checked sizes earlier.
             strcpy(pos, src);
             pos += len_src;
             left -= len_src;

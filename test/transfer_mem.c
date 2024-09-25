@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-int main() {
+int main(void) {
 
     transfer_t *returned_transfers[FED_MAXPARALLEL];
 
