@@ -17,10 +17,10 @@ static bool parse_args(fed *f,int argc, char *argv[])
     for(i = 1; success && (i < argc); i++) {
         if(streq("-u", argv[i]) && (i+1 < argc)) {
             i++;
-            success = copypath(f->pathUrls, argv[i]);
+            success = path1cpy(f->pathUrls, argv[i]);
         } else if(streq("-d", argv[i]) && (i+1 < argc)) {
             i++;
-            success = copypath(f->pathDB, argv[i]);
+            success = path1cpy(f->pathDB, argv[i]);
         } else if(streq("-t", argv[i]) && (i+1 < argc)) {
             i++;
             long t = strtol(argv[i], (char**)NULL, 10);

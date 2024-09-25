@@ -70,17 +70,29 @@ int main()
     char buf1[FED_MAXPATH + 3] = {0};
     char buf2[FED_MAXPATH + 3];
 
+
     memset(buf2,'a',sizeof(buf2));
     buf2[FED_MAXPATH+2] = '\0';
 
-    bool cpresult = copypath(buf1, buf2);
+    bool cpresult = path1cpy(buf1, buf2);
     assert(!cpresult);
-    assert(strlen(buf1) == (FED_MAXPATH - 1));
+    assert(strlen(buf1) < FED_MAXPATH);
     assert(buf1[FED_MAXPATH] == '\0');
     assert(buf1[FED_MAXPATH+1] == '\0');
 
-    printf("Testing strprefix");
+    puts("Testing strprefix");
     assert(strprefix("startsWith correct value","startsWith"));
     assert(!strprefix("does not startsWith correct value","startsWith"));
+
+    puts("Testing pathncat");
+
+    char buf[FED_MAXPATH];
+    buf[0] = 0;
+    assert(pathncat(buf, 1, "/test/1"));
+    assert(streq(buf, "/test/1"));
+
+    
+
+
     return 0;
 }

@@ -39,11 +39,7 @@ static bool find_in_env(fed *f, const char *env)
     }
     
     if(success) {
-#ifdef ON_WINDOWS
-        if(copypath2(f->pathUrls, envstr, "\\.fed\\urls.txt")) {
-#else
-        if(copypath2(f->pathUrls, envstr, "/.fed/urls.txt")) {
-#endif
+        if(path3cpy(f->pathUrls, envstr, ".fed","urls.txt")) {
             if(freadable(f->pathUrls)) {
                 success = true;
             }
@@ -79,7 +75,7 @@ static bool locate_urls_file(fed *f)
     if(!success) {
         char *varlib = "/var/lib/fed/urls.txt";
         if(freadable(varlib)) {
-            copypath(f->pathUrls, varlib);
+            path1cpy(f->pathUrls, varlib);
             success = true;
         }
 
@@ -120,13 +116,12 @@ static bool locate_db_file(fed *f) {
     
     bool success = !streq(f->pathDB,"");
     if(!success && !streq(f->pathUrls,"")) {
-        copypath(f->pathDB, f->pathUrls);
-        stripfilename(f->pathDB);
-        size_t len = strlen(f->pathDB);
-        if(len + 7 < FED_MAXPATH) { // 1 for path separator, 6 for fed.db
-            success = true;
-            f->pathDB[len] = PATH_SEP;
-            strcpy(&f->pathDB[len+1], "fed.db");
+        
+        // Unlikely to fail, but still performing the test for robustness.
+        success = path1cpy(f->pathDB, f->pathUrls);
+        if(success) {
+            stripfilename(f->pathDB);
+            success = path1cat(f->pathDB, "fed.db");
         }
     }
     return success;
