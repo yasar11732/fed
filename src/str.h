@@ -4,6 +4,7 @@
 #include "fed.h"
 #include <string.h>
 #include <stdbool.h>
+#include <assert.h>
 
 static inline bool strprefix(const char *str, const char *prefix) {
     size_t len = strlen(prefix);
