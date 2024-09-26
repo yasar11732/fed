@@ -75,10 +75,9 @@ static bool locate_urls_file(fed *f)
 
 
     if(!success) {
-        char *varlib = "/var/lib/fed/urls.txt";
+        const char *varlib = "/var/lib/fed/urls.txt";
         if(freadable(varlib)) {
-            path1cpy(f->pathUrls, varlib);
-            success = true;
+            success = path1cpy(f->pathUrls, varlib);
         }
 
     }
@@ -100,12 +99,7 @@ static bool open_urls_file(fed *f)
     }
 
     if(!success) {
-        /*
-        * At this point fileUrls is already 0
-        * but NULL is implementation-defined.
-        * we shouldn't assume NULL == 0
-        */
-        f->fileUrls = NULL;
+        assert(f->fileUrls == NULL);
     }
 
     return success;
@@ -119,12 +113,10 @@ static bool locate_db_file(fed *f) {
     bool success = !streq(f->pathDB,"");
     if(!success && !streq(f->pathUrls,"")) {
         
-        // Unlikely to fail, but still performing the test for robustness.
         success = path1cpy(f->pathDB, f->pathUrls);
-        if(success) {
-            stripfilename(f->pathDB);
-            success = path1cat(f->pathDB, "fed.db");
-        }
+        assert(success);
+        stripfilename(f->pathDB);
+        success = path1cat(f->pathDB, "fed.db");
     }
     return success;
 }

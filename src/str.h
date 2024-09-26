@@ -39,6 +39,9 @@ static inline bool pathncat(char *dest, size_t argc, ...)
 {
     bool success = true;
     size_t len = strlen(dest);
+
+    assert(len < FED_MAXPATH);
+
     char *pos = &dest[len];
     size_t left = FED_MAXPATH - len - 1; // -1 for null
     

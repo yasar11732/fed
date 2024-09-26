@@ -28,12 +28,10 @@ static inline uint32_t setBit(uint32_t val, unsigned int bit) {
 
 static transfer_t *new_transfer(char *url) {
     unsigned int bit;
+
+    assert(alloc_mask != 0);	
 	
-    // Implement an early exit if no free transfer is available.
-	if(alloc_mask == 0)
-		return NULL;
-	
-	for(bit = 0; bit < 32; bit++) {
+    for(bit = 0; bit < 32; bit++) {
 		if(isBitSet(alloc_mask, bit)) {
 			if(copyurl(transfer_pool[bit].url, url)) {
                 alloc_mask = unsetBit(alloc_mask, bit);
@@ -45,7 +43,10 @@ static transfer_t *new_transfer(char *url) {
 		}
 	}
 
-    // This code path is likely never executed.
+    /*
+    * This line being reached is a bug
+    */
+    assert(false);
     return NULL;
 }
 
