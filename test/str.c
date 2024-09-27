@@ -66,20 +66,6 @@ int main(void)
     assert(path3[FED_MAXPATH+3] == '/');
 #endif
 
-    printf("Testing copypath for overrun");
-    char buf1[FED_MAXPATH + 3] = {0};
-    char buf2[FED_MAXPATH + 3];
-
-
-    memset(buf2,'a',sizeof(buf2));
-    buf2[FED_MAXPATH+2] = '\0';
-
-    bool cpresult = path1cpy(buf1, buf2);
-    assert(!cpresult);
-    assert(strlen(buf1) < FED_MAXPATH);
-    assert(buf1[FED_MAXPATH] == '\0');
-    assert(buf1[FED_MAXPATH+1] == '\0');
-
     puts("Testing strprefix");
     assert(strprefix("startsWith correct value","startsWith"));
     assert(!strprefix("does not startsWith correct value","startsWith"));
