@@ -20,6 +20,8 @@ static inline bool notnull(const void *p) {
 }
 
 static inline void stripfilename(char *path) {
+    assert(notnull(path));
+
     unsigned int i;
     char *prev = NULL;
     for(i = 0; i < FED_MAXPATH; i++) {
@@ -30,17 +32,23 @@ static inline void stripfilename(char *path) {
             }
             prev = &path[i];
         } else if(path[i] == '\0') {
-            break;
+            return;
         }
     }
+
+    // if control reaches here, we have a bug
+    assert(false);
 }
 
 
 static inline bool pathncat(char *dest, size_t argc, ...)
 {
-    bool success = true;
-    size_t len = strlen(dest);
+    assert(notnull(dest));
+    assert(argc > 0);
 
+    bool success = true;
+    
+    size_t len = strlen(dest);
     assert(len < FED_MAXPATH);
 
     char *pos = &dest[len];
@@ -51,6 +59,8 @@ static inline bool pathncat(char *dest, size_t argc, ...)
 
     for(size_t i = 0; i < argc; i++) {
         const char *src = va_arg(argv, const char *);
+        assert(notnull(src));
+
         size_t len_src = strlen(src);
         
         if(len_src < left) {
@@ -115,7 +125,9 @@ static inline bool copyurl(char * dest, const char * src) {
 }
 
 static inline bool freadurl(char *dest, FILE *f) {
-
+    assert(notnull(dest));
+    assert(notnull(f));
+    
     // Ensure that the last element was not initially null
     dest[FED_MAXURL-1] = 'x';
 

@@ -27,19 +27,20 @@ static inline uint32_t setBit(uint32_t val, unsigned int bit) {
 }
 
 static transfer_t *new_transfer(char *url) {
-    unsigned int bit;
+    assert(notnull(url));
+    assert(alloc_mask != 0);
 
-    assert(alloc_mask != 0);	
-	
+    unsigned int bit;
     for(bit = 0; bit < 32; bit++) {
 		if(isBitSet(alloc_mask, bit)) {
-			if(copyurl(transfer_pool[bit].url, url)) {
-                alloc_mask = unsetBit(alloc_mask, bit);
-                transfer_pool[bit].cbData = 0;
-                return &transfer_pool[bit];
-            } else {
-                return NULL;
-            }
+#ifdef NDEBUG
+            copyurl(transfer_pool[bit].url, url);
+#else
+            assert(copyurl(transfer_pool[bit].url, url));
+#endif
+            alloc_mask = unsetBit(alloc_mask, bit);
+            transfer_pool[bit].cbData = 0;
+            return &transfer_pool[bit];
 		}
 	}
 

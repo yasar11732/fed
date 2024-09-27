@@ -3,15 +3,15 @@
 #include "fed.h"
 #include "str.h"
 #include <stdbool.h>
+#include <assert.h>
 
 static bool initialize_db(fed *f) {
     char *errmsg = NULL;
 
-    bool success = notnull(f) && notnull(f->conSqlite);
+    assert(notnull(f));
+    assert(notnull(f->conSqlite));
 
-    if(success) {
-        success = sqlite3_exec(f->conSqlite, "PRAGMA synchronous = NORMAL;", NULL, NULL, &errmsg) == SQLITE_OK;
-    }
+    bool success = sqlite3_exec(f->conSqlite, "PRAGMA synchronous = NORMAL;", NULL, NULL, &errmsg) == SQLITE_OK;
 
     if(success) {
         success = sqlite3_exec(f->conSqlite, "PRAGMA journal_mode = \'wal\';", NULL, NULL, &errmsg) == SQLITE_OK;

@@ -113,7 +113,15 @@ int main(void)
     char *test11[] = {"progname","-t","10000000000000000000000"};
     reset_fed(f);
     res = parse_args(f, _countof(test11), test11);
-    assert(res == false);
+    assert(!res);
+
+    // -t with no number
+    fputs(".",stdout);
+    char *test23[] = {"progname","-t"};
+    reset_fed(f);
+    res = parse_args(f, _countof(test23), test23);
+    assert(!res);
+
 
     // test all at the same time
     fputs(".", stdout);

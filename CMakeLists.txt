@@ -18,6 +18,17 @@ endif()
 add_subdirectory(src)
 
 option(BUILD_TESTS "Build Test Programs" OFF)
+option(ENABLE_COVERAGE "Build with --coverage" OFF)
+
+if(MSVC AND ENABLE_COVERAGE)
+    message(FATAL_ERROR "Cannot ENABLE_COVERAGE on MSVC compiler.")
+endif()
+
+
+if(ENABLE_COVERAGE)
+	add_compile_options(--coverage -g -O0)
+	add_link_options(--coverage)
+endif()
 
 if(BUILD_TESTS)
 	include(CTest)

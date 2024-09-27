@@ -31,4 +31,11 @@ int main(void) {
         free_transfer(returned_transfers[i]);
     }
     assert(alloc_mask == 0xFFFFFFFF);
+
+    puts("Test too long url fails.");
+    size_t alloc_size = 2 * FED_MAXURL;
+    char *url = malloc(alloc_size);
+    memset(url, 'x', alloc_size-1);
+    url[alloc_size-1] = '\0';
+    
 }

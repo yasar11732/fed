@@ -24,7 +24,9 @@ static bool parse_args(fed *f,int argc, char *argv[])
         } else if(streq("-t", argv[i]) && (i+1 < argc)) {
             i++;
             long t = strtol(argv[i], (char**)NULL, 10);
-            if(t > 0 && t < LONG_MAX && t <= INT_MAX) {
+            
+            
+            if(t > 0 && t < INT_MAX) {
                 f->numListed = (int)t;
             } else {
                 success = false;

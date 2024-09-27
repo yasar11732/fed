@@ -87,11 +87,8 @@ static bool locate_urls_file(fed *f)
 
 static bool open_urls_file(fed *f)
 {
-    bool success = notnull(f);
-
-    if(success) {
-        success = locate_urls_file(f);
-    }
+    assert(notnull(f));
+    bool success = locate_urls_file(f);
     
     if(success) {
         f->fileUrls = fopen(f->pathUrls, "r");
@@ -106,9 +103,8 @@ static bool open_urls_file(fed *f)
 }
 
 static bool locate_db_file(fed *f) {
-    
-    if(f == NULL)
-        return false;
+
+    assert(notnull(f));
     
     bool success = !streq(f->pathDB,"");
     if(!success && !streq(f->pathUrls,"")) {
@@ -123,12 +119,10 @@ static bool locate_db_file(fed *f) {
 
 static bool open_db_file(fed *f) {
     
-    bool success = notnull(f);
+    assert(notnull(f));
     
-    if(success) {
-        success = locate_db_file(f);
-    }
-
+    bool success = locate_db_file(f);
+    
     if(success) {
         success = sqlite3_open(f->pathDB, &f->conSqlite) == SQLITE_OK;
     }
@@ -140,11 +134,9 @@ static bool open_db_file(fed *f) {
 
 static bool init_program(fed *f)
 {
-    bool success = notnull(f);
+    assert(notnull(f));
     
-    if(success) {
-        success = open_urls_file(f);
-    }
+    bool success = open_urls_file(f);
 
     if(success) {
         success = open_db_file(f);
