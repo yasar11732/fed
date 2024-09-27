@@ -33,9 +33,8 @@ int main(void) {
     assert(alloc_mask == 0xFFFFFFFF);
 
     puts("Test too long url fails.");
-    size_t alloc_size = 2 * FED_MAXURL;
-    char *url = malloc(alloc_size);
-    memset(url, 'x', alloc_size-1);
-    url[alloc_size-1] = '\0';
-    
+    char url[2*FED_MAXURL];
+    memset(url, 'x', (2*FED_MAXURL)-1);
+    url[(2*FED_MAXURL)-1] = '\0';
+
 }
