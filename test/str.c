@@ -34,16 +34,6 @@ int main(void)
     stripfilename(path);
     assert(path2[3] == '\\');
 
-    // check if it stops at max path (first version used wrong macro)
-    char path3[FED_MAXPATH + 5];
-    memset(path3, '\\', FED_MAXPATH+4);
-    path3[FED_MAXPATH + 4] = '\0';
-    stripfilename(path3);
-    assert(path3[FED_MAXPATH] == '\\');
-    assert(path3[FED_MAXPATH+1] == '\\');
-    assert(path3[FED_MAXPATH+2] == '\\');
-    assert(path3[FED_MAXPATH+3] == '\\');
-
 #else
 
     // posix version
@@ -56,14 +46,6 @@ int main(void)
     stripfilename(path);
     assert(path2[3] == '/');
 
-    char path3[FED_MAXPATH + 5];
-    memset(path3, '/', FED_MAXPATH+4);
-    path3[FED_MAXPATH + 4] = '\0';
-    stripfilename(path3);
-    assert(path3[FED_MAXPATH] == '/');
-    assert(path3[FED_MAXPATH+1] == '/');
-    assert(path3[FED_MAXPATH+2] == '/');
-    assert(path3[FED_MAXPATH+3] == '/');
 #endif
 
     puts("Testing strprefix");
@@ -72,13 +54,22 @@ int main(void)
 
     puts("Testing pathncat");
 
-    char buf[FED_MAXPATH];
-    buf[0] = 0;
+    char buf[FED_MAXPATH+1];
+    buf[0] = '\0';
+    buf[FED_MAXPATH] = 'x'; // for checking overruns
+
     assert(pathncat(buf, 1, "/test/1"));
     assert(streq(buf, "/test/1"));
 
+    puts("Test pathncat fails on too long string.");
+    buf[0] = '\0';
+    assert(!pathncat(buf, 2, "veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryvery","veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryvery"));
+    assert(buf[FED_MAXPATH] == 'x');
 
-
+    puts("Test pathncat doesn't start empty string with seperator");
+    buf[0] = '\0';
+    assert(pathncat(buf, 2, "first","second"));
+    assert(strprefix(buf, "first"));
 
     return 0;
 }

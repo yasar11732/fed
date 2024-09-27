@@ -2,9 +2,10 @@
     "version": 8,
     "configurePresets": [
         {
-            "name": "ninja-multi-vcpkg",
-            "generator": "Ninja Multi-Config",
-			"binaryDir": "${sourceDir}/builds/${presetName}",
+            "name": "ninja-base-vcpkg",
+            "hidden": true,
+            "generator": "Ninja",
+			"binaryDir": "C:/${sourceDirName}/builds/${presetName}",
             "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
             "condition": {
                 "type": "equals",
@@ -13,59 +14,35 @@
             }
         },
         {
-            "name": "ninja-multi-vcpkg-test",
-            "inherits":"ninja-multi-vcpkg",
-            "cacheVariables": {
-                "BUILD_TESTS":"ON"
-            }
-        },{
-            "name": "devel",
-            "inherits":"ninja-multi-vcpkg",
-            "binaryDir": "$env{APPDATA}/${sourceDirName}/${presetName}",
+            "name": "debug",
+            "inherits":"ninja-base-vcpkg",
+            "displayName": "Configure (Debug)",
             "cacheVariables": {
                 "BUILD_TESTS":"ON",
-                "CMAKE_INSTALL_PREFIX":"C:\\fed"
+                "CMAKE_BUILD_TYPE":"Debug",
+                "CMAKE_VERBOSE_MAKEFILE":"ON",
+                "CMAKE_EXPORT_COMPILE_COMMANDS":"ON"
+            }
+        },{
+            "name": "release",
+            "displayName": "Configure (Release)",
+            "inherits":"ninja-base-vcpkg",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE":"Release"
             }
         }
         
     ],
 	"buildPresets": [
         {
-            "name": "ninja-vcpkg-debug",
-            "configurePreset": "ninja-multi-vcpkg",
-            "displayName": "Build (Debug)",
-            "configuration": "Debug"
-        },
-        {
-            "name": "ninja-vcpkg-release",
-            "configurePreset": "ninja-multi-vcpkg",
-            "displayName": "Build (Release)",
-            "configuration": "Release"
-        },
-        {
-            "name": "ninja-vcpkg-test",
-            "configurePreset": "ninja-multi-vcpkg-test",
-            "displayName": "Build (Test)",
-            "configuration": "Debug"
-        },
-        {
-            "name": "devel",
-            "configurePreset": "devel",
-            "displayName": "Build (Devel)",
-            "configuration": "Debug"
+            "name": "debug",
+            "configurePreset": "debug",
+            "displayName": "Build (Debug)"
+        },{
+            "name": "release",
+            "configurePreset": "release",
+            "displayName": "Build (Release)"
         }
-	],
-    "testPresets": [
-        {
-            "name":"test-ninja-vcpkg",
-            "configurePreset": "ninja-multi-vcpkg-test",
-            "displayName": "Test",
-            "configuration": "Debug"
-        },
-        {
-            "name": "devel",
-            "configurePreset": "devel",
-            "displayName": "Test (Devel)"
-        }
-    ]
+
+	]
 }

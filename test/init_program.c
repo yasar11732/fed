@@ -33,6 +33,7 @@ char *env_mocks[MOCK_SIZE];
 int open_file_count = 0;
 int fopen_call_count = 0;
 int fclose_call_count = 0;
+int fclose_return_value = 0;
 int get_env_call_count = 0;
 fed local_f;
 
@@ -42,6 +43,7 @@ int global_cleanup_call_count = 0;
 
 int sqlite3_open_call_count = 0;
 int sqlite3_close_call_count = 0;
+int sqlite3_close_return_value = SQLITE_OK;
 
 /*
 * ======================
@@ -102,7 +104,7 @@ int fclose_mock(FILE *stream)
     if(stream != NULL)
         open_file_count--;
     
-    return 0;
+    return fclose_return_value;
 }
 
 CURLcode curl_global_init_mock(long flags) {
@@ -132,7 +134,7 @@ CURLcode sqlite3_open_mock(char *filename, sqlite3 **ppDB) {
 int sqlite3_close_mock(sqlite3 *p) {
     (void)p;
     sqlite3_close_call_count++;
-    return SQLITE_OK;
+    return sqlite3_close_return_value;
 }
 /*
 * ===========================================
@@ -170,9 +172,11 @@ static void begin_test(char *name) {
 
     sqlite3_open_call_count = 0;
     sqlite3_close_call_count = 0;
+    sqlite3_close_return_value = SQLITE_OK;
 
     fopen_call_count = 0;
     fclose_call_count = 0;
+    fclose_return_value = 0;
     open_file_count = 0;
     get_env_call_count = 0;
     puts(name);
@@ -263,4 +267,70 @@ int main(void) {
     assert(sqlite3_close_call_count == 1);
     assert(open_file_count == 0);
 
+    begin_test("find_in_env rejects long pathname");
+#ifdef ON_WINDOWS
+    env_mocks[0] = "USERPROFILE=C:\\users\\veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylong";
+    fs_mocks[0] = "C:\\users\\veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylong\\.fed\\urls.txt";
+    assert(find_in_env(&local_f,"USERPROFILE") == false);
+#else
+    env_mocks[0] = "HOME=/home/veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylong";
+    fs_mocks[0] = "/home/veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylong/.fed/urls.txt";
+    assert(find_in_env(&local_f,"HOME") == false);
+#endif
+    
+    begin_test("find_in_env doesn't nonexisting file.");
+
+#ifdef ON_WINDOWS
+    env_mocks[0] = "USERPROFILE=C:\\users\\test";
+    assert(find_in_env(&local_f, "USERPROFILE") == false);
+#else
+    env_mocks[0] = "HOME=/home/test";
+    assert(find_in_env(&local_f, "HOME") == false);
+#endif
+
+    begin_test("locate_db_file is noop with preset location");
+    strcpy(local_f.pathDB,"/home/test/.fed/fed.db");
+    b = locate_db_file(&local_f);
+    assert(b);
+    assert(streq(local_f.pathDB, "/home/test/.fed/fed.db"));
+    assert(fopen_call_count == 0);
+    assert(get_env_call_count == 0);
+
+    begin_test("locate_db_file fails if both pathUrls and pathDB is empty");
+    b = locate_db_file(&local_f);
+    assert(!b);
+    assert(streq(local_f.pathDB,""));
+    assert(fopen_call_count == 0);
+    assert(get_env_call_count == 0);
+
+    begin_test("open_db_file fails if both pathUrls and pathDB is empty.");
+    b = open_db_file(&local_f);
+    assert(!b);
+
+    begin_test("cleanup_program doesn't close null urls file.");
+    (void)cleanup_program(&local_f);
+    assert(fclose_call_count == 0);
+
+    begin_test("cleanup_program doesn't close null sqlite3 conn.");
+    (void)cleanup_program(&local_f);
+    assert(sqlite3_close_call_count == 0);
+
+    begin_test("cleanup_program fails if fclose fails but sqlite3_close doesn't");
+    local_f.conSqlite = (sqlite3*)((char*)NULL+1);
+    local_f.fileUrls = (FILE*)((char*)NULL+1);
+    fclose_return_value = -1;
+    assert(!cleanup_program(&local_f));
+
+    begin_test("cleanup_program fails if sqlite3_close fails but fclose doesn't");
+    local_f.conSqlite = (sqlite3*)((char*)NULL+1);
+    local_f.fileUrls = (FILE*)((char*)NULL+1);
+    sqlite3_close_return_value = SQLITE_BUSY;
+    assert(!cleanup_program(&local_f));
+
+    begin_test("cleanup_program succeed if sqlite3_close and fclose succeed.");
+    local_f.conSqlite = (sqlite3*)((char*)NULL+1);
+    local_f.fileUrls = (FILE*)((char*)NULL+1);
+    assert(cleanup_program(&local_f));
+    assert(fclose_call_count == 1);
+    assert(sqlite3_close_call_count == 1);
 }

@@ -10,54 +10,42 @@
 
 static bool freadable(const char *path) {
     
-    bool result = notnull(path);
-    FILE *f = NULL;
+    assert(notnull(path));
 
-    // opening the file is pretty portable
-    // way to check if file exists
-    // ? do we care about race condition ?
-    if(result) {
-        f = fopen(path,"r");
-        result = (f != NULL);
-    }
-
-    if(result) {
-        // we don't care if fclose fails here
-        // we didn't modify the file
+    FILE *f = fopen(path,"r");
+    if(notnull(f)) {
         (void)fclose(f);
+        return true;
+    } else {
+        return false;
     }
-
-    return result;
 }
 
 static bool find_in_env(fed *f, const char *env)
 {
-    bool success = notnull(f) && notnull(env);
-    const char *envstr = NULL;
+    assert(notnull(f));
+    assert(notnull(env));
 
-    if(success) {
-        envstr = getenv(env);
-        success = notnull(envstr);
-    }
+    const char *envstr = getenv(env);
+    bool success = notnull(envstr);
     
     if(success) {
-        if(path3cpy(f->pathUrls, envstr, ".fed","urls.txt")) {
-            if(freadable(f->pathUrls)) {
-                success = true;
-            }
-        }
+        success = path3cpy(f->pathUrls, envstr, ".fed","urls.txt");
+    }
+
+    if(success) {
+        success = freadable(f->pathUrls);
     }
 
     return success;
 }
 
 static bool locate_urls_file(fed *f)
-{    
+{
+    assert(notnull(f));
+
     // if path explicitly defined on cmd
     // we don't do anything.
-    if(f == NULL)
-        return false;
-    
     bool success = !streq(f->pathUrls,"");
     
 #ifdef ON_WINDOWS
@@ -164,7 +152,7 @@ static bool cleanup_program(fed *f) {
     }
 
     if(f->conSqlite != NULL) {
-        success = (success && (sqlite3_close(f->conSqlite) == SQLITE_OK));
+        success = (sqlite3_close(f->conSqlite) == SQLITE_OK) && success;
     }
 
     return success;

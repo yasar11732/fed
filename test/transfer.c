@@ -121,5 +121,26 @@ int main(void) {
     assert(streq(global_options.useragent,"feed aggregator"));
     assert(curl_multi_add_handle_count == 1);
 
-    // TODO: Test unhappy paths too
+    
+
+
+
+
+    puts("Test Write Callback");
+    transfer_t *t = new_transfer("https://example.com");
+    assert(notnull(t));
+
+    char buf[5] = {0x1A, 0x2E, 0x3A, 0x4E, 0x5E };
+    size_t total_written = 0;
+    size_t chunk_written = 0;
+    do {
+        chunk_written = global_options.callback(buf, 1, sizeof(buf), t);
+        total_written += chunk_written;
+    } while(chunk_written == sizeof(buf));
+
+    assert(t->cbData == FED_MAXDATA);
+    assert(global_options.callback(buf, 1, sizeof(buf), t) == 0);
+    for(size_t i = 0; i < t->cbData; i++) {
+        assert(t->data[i] == buf[i % sizeof(buf)]);
+    }
 }
