@@ -2,6 +2,7 @@
 #define FED_TRANSFER_H
 #include "fed.h"
 #include "str.h"
+#include "parse.h"
 #include "transfer_mem.h"
 
 static size_t write_cb(const char *data, size_t size, size_t nmemb,
@@ -30,16 +31,69 @@ static inline bool curl_ok(CURLcode c) {
     return c == CURLE_OK;
 }
 
-static bool add_transfer(CURLM *mh, char *url) {
-    assert(notnull(mh));
-    assert(notnull(url));
-    
-    bool success = true;
-    CURL *eh = NULL;
-    transfer_t *t = NULL;
-    
+static inline bool freadurl(char *dest, FILE *f) {
+    assert(notnull(dest));
+    assert(notnull(f));
+
+    // to test for null later
+    dest[FED_MAXURL - 1] = 'x';
+
+    bool success = notnull(fgets(dest, FED_MAXURL, f));
+
     if(success) {
-        success = notnull(t = new_transfer(url));
+        /*
+        * To ensure the integrity of the read operation:
+        * 1) If the last character is non-null, the line is complete.
+        * 2) If the last character is null but preceded by a newline,
+        *    the line is also considered complete.
+        * 3) If the last line in file was exactly FED_MAXURL-1 characters
+        *    and is not newline-terminated, verify that the end of the
+        *    file has been reached.
+        */
+        success = (dest[FED_MAXURL-1] != '\0') || (dest[FED_MAXURL-2] == '\n') || feof(f);
+
+
+        /*
+        * Due to reading a partial line, additional characters
+        * must be consumed until the end-of-line delimiter is
+        * reached, ensuring proper alignment for the subsequent line.
+        */
+        if(!success) {
+            int c;
+            do {
+                c = fgetc(f);
+            } while((c > 0) && (c !='\n'));
+        }
+    }
+
+    /*
+    * Remove newline character
+    */
+    if(success) {
+        for(int i = 0; i < FED_MAXURL; i++) {
+            if((dest[i] == '\r') || (dest[i] == '\n')) {
+                dest[i] = '\0';
+                break;
+            } else if (dest[i] == '\0') {
+                break;
+            }
+        }
+    }
+
+    return success;
+
+}
+
+static bool add_transfer(fed *f) {
+    assert(notnull(f));
+    
+    transfer_t *t = new_transfer();
+    bool success = notnull(t);
+
+    CURL *eh = NULL;
+
+    if(success) {
+        success = freadurl(t->url, f->fileUrls);
     }
 
     if(success) {
@@ -47,7 +101,7 @@ static bool add_transfer(CURLM *mh, char *url) {
     }
 
     if(success) {
-        success = curl_ok(curl_easy_setopt(eh, CURLOPT_URL, url));
+        success = curl_ok(curl_easy_setopt(eh, CURLOPT_URL, t->url));
     }
 
     if(success) {
@@ -56,6 +110,10 @@ static bool add_transfer(CURLM *mh, char *url) {
 
     if(success) {
       success = curl_ok(curl_easy_setopt(eh, CURLOPT_WRITEFUNCTION, write_cb));
+    }
+
+    if (success) {
+        success = curl_ok(curl_easy_setopt(eh, CURLOPT_WRITEDATA, t));
     }
 
     if(success) {
@@ -72,7 +130,11 @@ static bool add_transfer(CURLM *mh, char *url) {
     }
 
     if(success) {
-        success = curl_multi_add_handle(mh, eh) == CURLM_OK;
+        success = curl_multi_add_handle(f->mh, eh) == CURLM_OK;
+    }
+
+    if(success) {
+        f->runningHandles++;
     }
 
     if(!success && notnull(eh)) {
@@ -85,5 +147,58 @@ static bool add_transfer(CURLM *mh, char *url) {
 
     return success;
 }
+
+static inline void add_transfers(fed *f)
+{
+  while((f->runningHandles < FED_MAXPARALLEL) && (feof(f->fileUrls) == 0)) {
+    add_transfer(f);
+  }
+}
+
+
+static void process_curl_events(fed *f) {
+
+    CURLMsg *msg = NULL;
+    int numMsg = 0;
+
+    while(notnull(msg = curl_multi_info_read(f->mh, &numMsg))) {
+        transfer_t *t = NULL;
+        
+        curl_easy_getinfo(msg->easy_handle, CURLINFO_PRIVATE, &t);
+        
+        assert(notnull(t));
+        assert(msg->msg == CURLMSG_DONE);
+        printf("New curl msg for %s\r\n", t->url);
+        if(msg->data.result == CURLE_OK) {
+            process_response(t);
+        } else {
+            fprintf(stderr, "%s: %s\r\n", t->url, curl_easy_strerror(msg->data.result));
+        }
+
+        free_transfer(t);
+        curl_multi_remove_handle(f->mh, msg->easy_handle);
+        curl_easy_cleanup(msg->easy_handle);
+    }
+}
+
+static bool main_loop(fed *f) {
+    bool success = true;
+
+    do {
+        success = curl_multi_perform(f->mh, &f->runningHandles) == CURLM_OK;
+
+        if(success) {
+            process_curl_events(f);
+            add_transfers(f);
+            success = curl_multi_wait(f->mh, NULL, 0, 1000, NULL) == CURLM_OK;
+        } else {
+             assert(false);
+        }
+
+    } while(success && f->runningHandles > 0);
+
+    return success;
+}
+
 
 #endif

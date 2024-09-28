@@ -19,9 +19,9 @@
 
 #define FED_MAXPATH 260u
 #define FED_NUMARTICLES 32u // default value for -t switch
-#define FED_MAXURL 512u
+#define FED_MAXURL 512
 #define FED_MAXDATA 0x01000000ul
-#define FED_MAXPARALLEL 32u // If you change this, you must fix transfer_mem.h as it assumes this is 32
+#define FED_MAXPARALLEL 32 // If you change this, you must fix transfer_mem.h as it assumes this is 32
 
 typedef struct {
     size_t cbData;
@@ -32,13 +32,13 @@ typedef struct {
 // program context
 typedef struct {
     unsigned int numListed;
+    int runningHandles;
     enum {
         ASC, DESC
     } orderListed;
     
     FILE *fileUrls;
     sqlite3 *conSqlite;
-    transfer_t *transfers;
     CURLM *mh;
 
     char pathUrls[FED_MAXPATH];
@@ -47,7 +47,7 @@ typedef struct {
 } fed;
 
 static inline void init_fed(fed *f) {
-    *f = (fed){0u, ASC, NULL, NULL, NULL, NULL, {'\0'}, {'\0'}};
+    *f = (fed){0u, 0, ASC, NULL, NULL, NULL, {'\0'}, {'\0'}};
 }
 
 static inline void init_transfer(transfer_t *t) {

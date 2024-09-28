@@ -138,6 +138,14 @@ static bool init_program(fed *f)
         success = curl_global_init(CURL_GLOBAL_ALL) == CURLE_OK;
     }
 
+    if(success) {
+        success = notnull(f->mh = curl_multi_init());
+    }
+
+    if(success) {
+        (void)curl_multi_setopt(f->mh, CURLMOPT_MAXCONNECTS, FED_MAXPARALLEL);
+    }
+
     return success;
 }
 
@@ -147,12 +155,16 @@ static bool cleanup_program(fed *f) {
 
     (void)curl_global_cleanup();
 
-    if(f->fileUrls != NULL) {
+    if(notnull(f->fileUrls)) {
         success = (fclose(f->fileUrls) != EOF);
     }
 
-    if(f->conSqlite != NULL) {
+    if(notnull(f->conSqlite)) {
         success = (sqlite3_close(f->conSqlite) == SQLITE_OK) && success;
+    }
+
+    if(notnull(f->mh)) {
+        success = (curl_multi_cleanup(f->mh) == CURLM_OK) && success;
     }
 
     return success;

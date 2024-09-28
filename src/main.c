@@ -2,6 +2,7 @@
 #include "fed.h"
 #include "parse_args.h"
 #include "init_program.h"
+#include "transfer.h"
 
 #include <stdio.h>
 #include <stddef.h>
@@ -29,7 +30,8 @@ int main(int argc, char *argv[])
 
     if(init_program(&f)) {
         
-        // TODO ...
+        add_transfers(&f);
+        main_loop(&f);
 
     } else if(f.fileUrls == NULL) {
         (void)fputs("Unable to locate or open the URLs file. Ensure that "
