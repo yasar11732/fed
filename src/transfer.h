@@ -122,7 +122,11 @@ static bool add_transfer(fed *f) {
         */
        (void)curl_easy_setopt(eh, CURLOPT_TIMEOUT, 20L);
        (void)curl_easy_setopt(eh, CURLOPT_FOLLOWLOCATION, 1L);
+#if LIBCURL_VERSION_NUM >= 0x075500
        (void)curl_easy_setopt(eh, CURLOPT_PROTOCOLS_STR, "http,https");
+#else
+        (void)curl_easy_setopt(eh, CURLOPT_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS);
+#endif
        (void)curl_easy_setopt(eh, CURLOPT_AUTOREFERER, 1L);
        (void)curl_easy_setopt(eh, CURLOPT_MAXREDIRS, 10L);
        (void)curl_easy_setopt(eh, CURLOPT_CONNECTTIMEOUT_MS, 2000L);
