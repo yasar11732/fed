@@ -18,7 +18,7 @@
 #include <curl/curl.h>
 
 // to prevent db.h to be included later
-#define FEED_DB_H
+#define FED_DB_H
 /*
 * =========================
 * GLOBALS
@@ -117,6 +117,15 @@ void curl_global_cleanup_mock(void) {
     global_cleanup_call_count++;
 }
 
+int curl_multi_cleanup_calls = 0;
+CURLMcode curl_multi_cleanup_retval = CURLM_OK;
+CURLMcode curl_multi_cleanup_mock(CURLM *multi_handle)
+{
+    (void)multi_handle;
+    curl_multi_cleanup_calls++;
+    return curl_multi_cleanup_retval;
+}
+
 bool initialize_db_mock(fed *f) {
     (void)f;
     return true;
@@ -149,6 +158,7 @@ int sqlite3_close_mock(sqlite3 *p) {
 #define initialize_db initialize_db_mock
 #define sqlite3_open sqlite3_open_mock
 #define sqlite3_close sqlite3_close_mock
+#define curl_multi_cleanup curl_multi_cleanup_mock
 
 #include "init_program.h"
 
@@ -158,14 +168,17 @@ int sqlite3_close_mock(sqlite3 *p) {
 */
 static void begin_test(char *name) {
 
+    puts(name);
+
     int i;
     
     for(i = 0; i < MOCK_SIZE; i++) {
         fs_mocks[i] = NULL;
         env_mocks[i] = NULL;
     }
-    memset(&local_f, 0, sizeof(local_f));
-    
+
+    init_fed(&local_f);
+
     global_init_call_count = 0;
     global_cleanup_call_count = 0;
     global_init_ret = CURLE_OK;
@@ -179,16 +192,12 @@ static void begin_test(char *name) {
     fclose_return_value = 0;
     open_file_count = 0;
     get_env_call_count = 0;
-    puts(name);
 
+    curl_multi_cleanup_calls = 0;
+    curl_multi_cleanup_retval = CURLM_OK;
 }
 
 int main(void) {
-
-    begin_test("init_program zero initializes");
-    init_program(&local_f);
-    fed g = {0};
-    assert(memcmp(&local_f, &g, sizeof(g)) == 0);
 
     begin_test("freadable test non existing");
     fs_mocks[0] = "/a.txt";
@@ -333,4 +342,26 @@ int main(void) {
     assert(cleanup_program(&local_f));
     assert(fclose_call_count == 1);
     assert(sqlite3_close_call_count == 1);
+
+    begin_test("cleanup_program fails if curl_multi_cleanup fails.");
+    local_f.conSqlite = (sqlite3*)((char*)NULL+1);
+    local_f.fileUrls = (FILE*)((char*)NULL+1);
+    local_f.mh = (CURLM *)((char*)NULL+1);
+    curl_multi_cleanup_retval = CURLM_BAD_HANDLE;
+    assert(!cleanup_program(&local_f));
+    assert(curl_multi_cleanup_calls > 0);
+
+    begin_test("cleanup_program calls curl_multi_cleanup even if earlier steps fails.");
+    local_f.fileUrls = (FILE*)((char*)NULL+1);
+    fclose_return_value = -1;
+
+    local_f.mh = (CURLM *)((char*)NULL+1);
+
+    assert(!cleanup_program(&local_f));
+    assert(curl_multi_cleanup_calls > 0);
+
+    begin_test("init_program fails if open_urls_file fails");
+    fclose_return_value = -1;
+    assert(!init_program(&local_f));
+
 }

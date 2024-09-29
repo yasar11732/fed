@@ -26,8 +26,7 @@ static inline uint32_t setBit(uint32_t val, unsigned int bit) {
 	return val | (1 << bit);
 }
 
-static transfer_t *new_transfer() {
-    assert(alloc_mask != 0);
+static transfer_t *new_transfer(void) {
 
     unsigned int bit;
     for(bit = 0; bit < 32; bit++) {
@@ -38,14 +37,12 @@ static transfer_t *new_transfer() {
 		}
 	}
 
-    /*
-    * This line being reached is a bug
-    */
-    assert(false);
     return NULL;
 }
 
 static void free_transfer(transfer_t *t) {
+    assert(t >= transfer_pool); // LCOV_EXCL_LINE
+    assert((t - transfer_pool) < 32);  // LCOV_EXCL_LINE
     alloc_mask = setBit(alloc_mask, (unsigned int)(t - transfer_pool));
 }
 

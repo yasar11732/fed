@@ -10,7 +10,7 @@
 
 static bool freadable(const char *path) {
     
-    assert(notnull(path));
+    assert(notnull(path));  // LCOV_EXCL_LINE
 
     FILE *f = fopen(path,"r");
     if(notnull(f)) {
@@ -23,8 +23,8 @@ static bool freadable(const char *path) {
 
 static bool find_in_env(fed *f, const char *env)
 {
-    assert(notnull(f));
-    assert(notnull(env));
+    assert(notnull(f));  // LCOV_EXCL_LINE
+    assert(notnull(env));  // LCOV_EXCL_LINE
 
     const char *envstr = getenv(env);
     bool success = notnull(envstr);
@@ -42,7 +42,7 @@ static bool find_in_env(fed *f, const char *env)
 
 static bool locate_urls_file(fed *f)
 {
-    assert(notnull(f));
+    assert(notnull(f));  // LCOV_EXCL_LINE
 
     // if path explicitly defined on cmd
     // we don't do anything.
@@ -75,7 +75,8 @@ static bool locate_urls_file(fed *f)
 
 static bool open_urls_file(fed *f)
 {
-    assert(notnull(f));
+    assert(notnull(f));  // LCOV_EXCL_LINE
+
     bool success = locate_urls_file(f);
     
     if(success) {
@@ -84,7 +85,7 @@ static bool open_urls_file(fed *f)
     }
 
     if(!success) {
-        assert(f->fileUrls == NULL);
+        assert(f->fileUrls == NULL);  // LCOV_EXCL_LINE
     }
 
     return success;
@@ -92,13 +93,13 @@ static bool open_urls_file(fed *f)
 
 static bool locate_db_file(fed *f) {
 
-    assert(notnull(f));
+    assert(notnull(f));  // LCOV_EXCL_LINE
     
     bool success = !streq(f->pathDB,"");
     if(!success && !streq(f->pathUrls,"")) {
         
         success = path1cpy(f->pathDB, f->pathUrls);
-        assert(success);
+        assert(success);  // LCOV_EXCL_LINE
         stripfilename(f->pathDB);
         success = path1cat(f->pathDB, "fed.db");
     }
@@ -107,7 +108,7 @@ static bool locate_db_file(fed *f) {
 
 static bool open_db_file(fed *f) {
     
-    assert(notnull(f));
+    assert(notnull(f));  // LCOV_EXCL_LINE
     
     bool success = locate_db_file(f);
     
@@ -122,7 +123,7 @@ static bool open_db_file(fed *f) {
 
 static bool init_program(fed *f)
 {
-    assert(notnull(f));
+    assert(notnull(f));  // LCOV_EXCL_LINE
     
     bool success = open_urls_file(f);
 

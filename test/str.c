@@ -71,5 +71,15 @@ int main(void)
     assert(pathncat(buf, 2, "first","second"));
     assert(strprefix(buf, "first"));
 
+    puts("Test copyurl fails with too long string.");
+    char copyurllongbuff[FED_MAXURL * 2];
+    char copyurldestpath[FED_MAXURL + 2];
+
+    memset(copyurllongbuff,'x',(FED_MAXURL * 2));
+    copyurllongbuff[(FED_MAXURL * 2) - 1] = '\0';
+    copyurldestpath[FED_MAXURL] = '~';
+    assert(!copyurl(copyurldestpath, copyurllongbuff));
+    assert(copyurldestpath[FED_MAXURL] == '~');
+
     return 0;
 }

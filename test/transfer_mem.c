@@ -12,7 +12,7 @@ int main(void) {
 
     puts("Test can alloc FED_MAXPARALLEL");
     for(size_t i = 0; i < FED_MAXPARALLEL; i++) {
-        returned_transfers[i] = new_transfer("");
+        returned_transfers[i] = new_transfer();
         assert(notnull(returned_transfers[i]));
     }
 

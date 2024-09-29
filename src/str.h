@@ -20,7 +20,7 @@ static inline bool notnull(const void *p) {
 }
 
 static inline void stripfilename(char *path) {
-    assert(notnull(path));
+    assert(notnull(path));  // LCOV_EXCL_LINE
 
     unsigned int i;
     char *prev = NULL;
@@ -37,19 +37,19 @@ static inline void stripfilename(char *path) {
     }
 
     // if control reaches here, we have a bug
-    assert(false);
+    assert(false);  // LCOV_EXCL_LINE
 }
 
 
 static inline bool pathncat(char *dest, size_t argc, ...)
 {
-    assert(notnull(dest));
-    assert(argc > 0);
+    assert(notnull(dest));  // LCOV_EXCL_LINE
+    assert(argc > 0);  // LCOV_EXCL_LINE
 
     bool success = true;
     
     size_t len = strlen(dest);
-    assert(len < FED_MAXPATH);
+    assert(len < FED_MAXPATH);  // LCOV_EXCL_LINE
 
     char *pos = &dest[len];
     size_t left = FED_MAXPATH - len - 1; // -1 for null
@@ -59,7 +59,7 @@ static inline bool pathncat(char *dest, size_t argc, ...)
 
     for(size_t i = 0; i < argc; i++) {
         const char *src = va_arg(argv, const char *);
-        assert(notnull(src));
+        assert(notnull(src));  // LCOV_EXCL_LINE
 
         size_t len_src = strlen(src);
         
@@ -121,7 +121,7 @@ static inline bool path3cpy(char *dest, const char *src1, const char *src2, cons
 
 static inline bool copyurl(char * dest, const char * src) {
     int res = snprintf(dest, FED_MAXURL, "%s", src);
-    return (res > -1) && ((unsigned int)res < FED_MAXPATH);
+    return (unsigned int)res < FED_MAXURL;
 }
 
 #endif

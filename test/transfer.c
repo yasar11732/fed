@@ -9,7 +9,10 @@
 #include <stdint.h>
 #include "fed.h"
 #include "str.h"
+#include "transfer_mem.h"
 #include <string.h>
+
+fed local_fed;
 
 char buf[FED_MAXURL+1];
 FILE *mockf = (FILE*)((char*)NULL+1);
@@ -56,22 +59,6 @@ int fgetc_mock(FILE *stream) {
     return fgetc_retval[fgetc_index++];
 }
 
-void begin_test(char *msg) {
-    puts(msg);
-
-    buf[0] = '\0';
-
-    fgets_retval = "";
-    fgets_call_count = 0;
-
-    feof_retval = 0;
-    feof_call_count = 0;
-
-    *fgetc_retval = *(int[5]){EOF, EOF, EOF, EOF, EOF};
-    fgetc_index = 0;
-    fgetc_call_count = 0;
-}
-
 /*
 * Mocks
 */
@@ -96,12 +83,19 @@ typedef struct {
 
 my_curl_options_t global_options;
 
+CURL *curl_easy_init_retval;
 CURL *curl_easy_init_mock(void) {
-    intptr_t p = (intptr_t)NULL;
-    return (CURL*)~p;
+    return curl_easy_init_retval;
 }
 
+CURLcode curl_easy_setopt_retval;
+
 CURLcode curl_easy_setopt_mock(CURL *curl, CURLoption option, ...) {
+
+    if(curl_easy_setopt_retval != CURLE_OK) {
+        return curl_easy_setopt_retval;
+    }
+
     (void)curl;
     va_list arg;
     va_start(arg, option);
@@ -161,8 +155,40 @@ CURLMcode curl_multi_add_handle_mock(CURLM *mh, CURL *eh) {
         return CURLM_BAD_FUNCTION_ARGUMENT;
 }
 
+int curl_easy_cleanup_calls = 0;
 void curl_easy_cleanup_mock(CURL *curl) {
     (void)curl;
+    curl_easy_cleanup_calls++;
+}
+
+/*
+* Resets all global variables before a test 
+*/
+void begin_test(char *msg) {
+    puts(msg);
+
+    init_fed(&local_fed);
+    local_fed.fileUrls = (FILE*)(((char*)NULL)+1);
+    local_fed.mh = mycurlm;
+
+    alloc_mask = 0xFFFFFFFFul;
+
+    buf[0] = '\0';
+
+    fgets_retval = "";
+    fgets_call_count = 0;
+
+    feof_retval = 0;
+    feof_call_count = 0;
+
+    *fgetc_retval = *(int[5]){EOF, EOF, EOF, EOF, EOF};
+    fgetc_index = 0;
+    fgetc_call_count = 0;
+
+    intptr_t p = (intptr_t)NULL;
+    curl_easy_init_retval = (CURL*)~p;
+    curl_easy_setopt_retval = CURLE_OK;
+    curl_easy_cleanup_calls = 0;
 }
 
 #undef curl_easy_setopt
@@ -180,10 +206,6 @@ void curl_easy_cleanup_mock(CURL *curl) {
 
 int main(void) {
     puts("add_transfer sets options.");
-    fed local_fed;
-    init_fed(&local_fed);
-    local_fed.fileUrls = (FILE*)(((char*)NULL)+1);
-    local_fed.mh = mycurlm;
     
     begin_test("add_transfer sets options.");
     fgets_retval = "https://example.com";
@@ -204,7 +226,7 @@ int main(void) {
     assert(curl_multi_add_handle_count == 1);
 
     begin_test("write_cb writes up to FED_MAXDATA bytes.");
-    transfer_t *t = new_transfer("https://example.com");
+    transfer_t *t = new_transfer();
     assert(notnull(t));
 
     char buf_writecb[5] = {0x1A, 0x2E, 0x3A, 0x4E, 0x5E };
@@ -271,10 +293,43 @@ int main(void) {
     assert(b);
     assert(streq(buf, "http://www.example.com/"));
 
+    fgets_retval = "http://www.example.com/\r\n";
+    b = freadurl(buf, mockf);
+    assert(b);
+    assert(streq(buf, "http://www.example.com/"));
+
     begin_test("freadurl skips until next line if current line is too big.");
     fgets_retval = buf2;
     memcpy(fgetc_retval, (int[5]){'a','b','\n', EOF, EOF}, sizeof(int[5]));
 
     b = freadurl(buf, mockf);
     assert(fgetc_index == 3);
+
+    begin_test("add_transfer frees transfer on failure");
+    curl_easy_init_retval = NULL;
+    b = add_transfer(&local_fed);
+    assert(!b);
+    assert(alloc_mask == 0xFFFFFFFF);
+
+    begin_test("add_transfer cleans up easy handle on failure");
+    curl_easy_setopt_retval = CURLE_BAD_FUNCTION_ARGUMENT;
+    b = add_transfer(&local_fed);
+    assert(!b);
+    assert(curl_easy_cleanup_calls > 0);
+
+    begin_test("add_transfer does not free NULL transfer");
+    alloc_mask = 0;
+    b = add_transfer(&local_fed);
+    assert(!b);
+    // transfer freeing function does assertion for invalid pointers
+
+    begin_test("add_transfers adds transfers");
+    add_transfers(&local_fed);
+    assert(local_fed.runningHandles == FED_MAXPARALLEL);
+
+    begin_test("add_transfers does not add transfers if end of file is reached");
+    feof_retval = 1;
+    add_transfers(&local_fed);
+    assert(local_fed.runningHandles == 0);
+
 }

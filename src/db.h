@@ -1,5 +1,5 @@
-#ifndef FEED_DB_H
-#define FEED_DB_H
+#ifndef FED_DB_H
+#define FED_DB_H
 #include "fed.h"
 #include "str.h"
 #include <stdbool.h>
@@ -8,8 +8,8 @@
 static bool initialize_db(fed *f) {
     char *errmsg = NULL;
 
-    assert(notnull(f));
-    assert(notnull(f->conSqlite));
+    assert(notnull(f));  // LCOV_EXCL_LINE
+    assert(notnull(f->conSqlite));  // LCOV_EXCL_LINE
 
     bool success = sqlite3_exec(f->conSqlite, "PRAGMA synchronous = NORMAL;", NULL, NULL, &errmsg) == SQLITE_OK;
 
