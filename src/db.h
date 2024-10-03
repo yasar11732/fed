@@ -76,5 +76,10 @@ static bool initialize_db(fed *f) {
     return success;
 }
 
+static void insert_article(fed *f, char *title, char *link, char *updated){
+    (void)f;
+    printf("%s %s %s", title, link, updated);
+}
+
 
 #endif

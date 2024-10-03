@@ -14,6 +14,7 @@
 
 #include <stdio.h> // FILE
 #include <stdbool.h> // bool
+#include <string.h> // memset
 #include "sqlite3.h"
 #include <curl/curl.h>
 
@@ -22,6 +23,9 @@
 #define FED_MAXURL 512
 #define FED_MAXDATA 0x01000000ul
 #define FED_MAXPARALLEL 32 // If you change this, you must fix transfer_mem.h as it assumes this is 32
+
+#define FED_MAXTITLE 256
+#define FED_MAXTIMESTRING 32
 
 typedef struct {
     size_t cbData;
@@ -51,7 +55,7 @@ static inline void init_fed(fed *f) {
 }
 
 static inline void init_transfer(transfer_t *t) {
-    *t = (transfer_t){0, {'\0'}, {'\0'}};
+    memset(t, 0, sizeof(*t));
 }
 
 #endif

@@ -2,7 +2,7 @@
 #define FED_TRANSFER_H
 #include "fed.h"
 #include "str.h"
-#include "parse.h"
+#include "xmlparse.h"
 #include "transfer_mem.h"
 
 static size_t write_cb(const char *data, size_t size, size_t nmemb,

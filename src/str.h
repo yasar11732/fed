@@ -35,9 +35,7 @@ static inline void stripfilename(char *path) {
             return;
         }
     }
-
-    // if control reaches here, we have a bug
-    assert(false);  // LCOV_EXCL_LINE
+    
 }
 
 

@@ -3,7 +3,7 @@
 #define FED_MAINLOOP
 #include "fed.h"
 #include "str.h"
-#include "parse.h"
+#include "xmlparse.h"
 #include "transfer.h"
 
 #include <assert.h>
@@ -20,9 +20,8 @@ static void process_curl_events(fed *f) {
         
         assert(notnull(t));
         assert(msg->msg == CURLMSG_DONE);
-        printf("New curl msg for %s\r\n", t->url);
         if(msg->data.result == CURLE_OK) {
-            process_response(t);
+            process_response(f, t);
         } else {
             fprintf(stderr, "%s: %s\r\n", t->url, curl_easy_strerror(msg->data.result));
         }

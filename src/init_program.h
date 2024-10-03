@@ -124,6 +124,17 @@ static bool open_db_file(fed *f) {
 static bool init_program(fed *f)
 {
     assert(notnull(f));  // LCOV_EXCL_LINE
+
+#ifdef _MSC_VER
+    #pragma warning( push )
+    #pragma warning( disable : 4127)
+#endif
+    if(CURLMSG_LAST != 2) {
+        fprintf(stderr, "Incompatible curl version detected. If you experience problems, try downgrading curl or upgrading this program.");
+    }
+#ifdef _MSC_VER
+    #pragma warning( pop )
+#endif
     
     bool success = open_urls_file(f);
 

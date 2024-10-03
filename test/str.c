@@ -81,5 +81,15 @@ int main(void)
     assert(!copyurl(copyurldestpath, copyurllongbuff));
     assert(copyurldestpath[FED_MAXURL] == '~');
 
+    puts("stripfilename doesn't look past FED_MAXPATH characters.");
+#ifdef ON_WINDOWS
+    char longpathname[] = "veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryvery\\list.txt"; 
+#else
+    char longpathname[] = "veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryvery/list.txt"; 
+#endif
+    stripfilename(longpathname);
+    assert(longpathname[320] == PATH_SEP);
+
+
     return 0;
 }
