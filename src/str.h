@@ -122,4 +122,27 @@ static inline bool copyurl(char * dest, const char * src) {
     return (unsigned int)res < FED_MAXURL;
 }
 
+static inline char *stripheader(char *src) {
+    char *p = src;
+    char *p2;
+    
+    // strip from start
+    while(*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n') {
+        p++;
+    }
+
+    // go to end of line
+    p2 = p;
+    while(*p2 != '\r' && *p2 != '\n') {
+        p2++;
+    }
+
+    while(*p2 == ' ' || *p2 == '\t' || *p2 == '\r' || *p2 == '\n') {
+        *p2 = '\0';
+        p2--;
+    }
+
+    return p;
+}
+
 #endif

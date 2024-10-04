@@ -7,6 +7,7 @@ project ("fed" LANGUAGES C)
 
 find_package(CURL REQUIRED)
 find_package(LibXml2 REQUIRED)
+find_package(SQLite3 REQUIRED)
 
 if(MSVC)
     add_definitions(/D_CONSOLE /DWIN32_LEAN_AND_MEAN /D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE)
@@ -20,10 +21,10 @@ add_subdirectory(src)
 option(BUILD_TESTS "Build Test Programs" OFF)
 option(ENABLE_COVERAGE "Build with --coverage" OFF)
 
+
 if(MSVC AND ENABLE_COVERAGE)
     message(FATAL_ERROR "Cannot ENABLE_COVERAGE on MSVC compiler.")
 endif()
-
 
 if(ENABLE_COVERAGE)
 	add_compile_options(--coverage -g -O0)
@@ -35,6 +36,5 @@ if(BUILD_TESTS)
 	enable_testing()
 	add_subdirectory(test)
 endif()
-
 
 

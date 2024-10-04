@@ -5,6 +5,7 @@
 #include "str.h"
 #include "db.h"
 
+#include <stdlib.h> // get env
 #include <stdbool.h>
 #include <curl/curl.h>
 

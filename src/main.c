@@ -2,6 +2,7 @@
 #include "fed.h"
 #include "parse_args.h"
 #include "init_program.h"
+#include "transfer.h"
 #include "main_loop.h"
 
 #include <stdio.h>

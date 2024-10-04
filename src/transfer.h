@@ -5,6 +5,28 @@
 #include "xmlparse.h"
 #include "transfer_mem.h"
 
+static size_t header_cb(char *buffer, size_t size, size_t nitems, void *userdata) {
+
+    (void)size;
+
+    transfer_t *t = (transfer_t *)userdata;
+    if(nitems > 5 && (strprefix(buffer,"etag:") || strprefix(buffer,"ETag:"))) {
+        char *p = buffer+5;
+        p = stripheader(p);
+        strncpy(t->etag, p, FED_MAXETAG-1);
+        t->etag[FED_MAXETAG-1] = '\0';
+    }
+
+    if(nitems > 14 && (strprefix(buffer,"last-modified:") || strprefix(buffer,"Last-Modified:"))) {
+        char *p = buffer+14;
+        p = stripheader(p);
+        strncpy(t->lastmodified, p, FED_MAXTIMESTRING-1);
+        t->lastmodified[FED_MAXTIMESTRING-1] = '\0';
+    }
+    
+    return nitems;
+}
+
 static size_t write_cb(const char *data, size_t size, size_t nmemb,
                        void *userdata) {
 
@@ -84,6 +106,8 @@ static inline bool freadurl(char *dest, FILE *f) {
 
 }
 
+
+
 static bool add_transfer(fed *f) {
     assert(notnull(f)); // LCOV_EXCL_LINE
     
@@ -93,7 +117,27 @@ static bool add_transfer(fed *f) {
     CURL *eh = NULL;
 
     if(success) {
+        init_transfer(t);
+        t->fed = f;
         success = freadurl(t->url, f->fileUrls);
+    }
+
+    if(success) {
+        success = get_feed_details(t);
+    }
+
+    if(success) {
+        if(t->etag[0] != '\0') {
+            char buf_etag[FED_MAXETAG + 15];
+            snprintf(buf_etag, FED_MAXETAG + 15, "If-None-Match: %s", t->etag);
+            t->headers = curl_slist_append(t->headers, buf_etag);
+        }
+
+        if(t->lastmodified[0] != '\0') {
+            char buf_lastmodified[FED_MAXTIMESTRING + 19];
+            snprintf(buf_lastmodified, FED_MAXTIMESTRING + 19, "If-Modified-Since: %s", t->lastmodified);
+            t->headers = curl_slist_append(t->headers, buf_lastmodified);
+        }
     }
 
     if(success) {
@@ -101,6 +145,8 @@ static bool add_transfer(fed *f) {
     }
 
     if(success) {
+        // curl_easy_setopt(eh, CURLOPT_PROXY,"http://127.0.0.1:8080");
+        // curl_easy_setopt(eh, CURLOPT_SSL_VERIFYPEER, 0L);
         success = curl_ok(curl_easy_setopt(eh, CURLOPT_URL, t->url));
     }
 
@@ -117,9 +163,24 @@ static bool add_transfer(fed *f) {
     }
 
     if(success) {
+      success = curl_ok(curl_easy_setopt(eh, CURLOPT_HEADERFUNCTION, header_cb));
+    }
+
+    if (success) {
+        success = curl_ok(curl_easy_setopt(eh, CURLOPT_HEADERDATA, t));
+    }
+
+    if(success) {
+
         /*
         * Optional options (no pun intended, probably)
         */
+
+        if(t->headers != NULL) {
+            (void)curl_easy_setopt(eh, CURLOPT_HTTPHEADER, t->headers);
+        }
+
+       (void)curl_easy_setopt(eh, CURLOPT_ACCEPT_ENCODING, "");
        (void)curl_easy_setopt(eh, CURLOPT_TIMEOUT, 20L);
        (void)curl_easy_setopt(eh, CURLOPT_FOLLOWLOCATION, 1L);
 

@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include "fed.h"
 #include "str.h"
+#include "init_program.h"
 #include "transfer_mem.h"
 #include <string.h>
 
@@ -63,12 +64,15 @@ int fgetc_mock(FILE *stream) {
 * Mocks
 */
 typedef size_t (*fn_write_callback)(const char *, size_t size, size_t nmemb, void *userdata);
+typedef size_t (*fn_header_callback)(char *buffer, size_t size, size_t nitems, void *userdata);
 
 typedef struct {
     void *private;
     void *writedata;
+    void *headerdata;
 
     fn_write_callback callback;
+    fn_header_callback header_cb;
     
     long timeout;
     long followlocation;
@@ -134,6 +138,12 @@ CURLcode curl_easy_setopt_mock(CURL *curl, CURLoption option, ...) {
         case CURLOPT_WRITEDATA:
             global_options.writedata = va_arg(arg, void *);
             break;
+        case CURLOPT_HEADERFUNCTION:
+            global_options.header_cb = va_arg(arg, fn_header_callback);
+            break;
+        case CURLOPT_HEADERDATA:
+            global_options.headerdata = va_arg(arg, void *);
+            break;
         default:
             return CURLE_BAD_FUNCTION_ARGUMENT;
     }
@@ -167,7 +177,13 @@ void curl_easy_cleanup_mock(CURL *curl) {
 void begin_test(char *msg) {
     puts(msg);
 
+    if(notnull(local_fed.conSqlite)) {
+        sqlite3_close(local_fed.conSqlite);
+    }
     init_fed(&local_fed);
+    strcpy(local_fed.pathDB,":memory:");
+    sqlite3_open(local_fed.pathDB, &local_fed.conSqlite);
+    initialize_db(&local_fed);
     local_fed.fileUrls = (FILE*)(((char*)NULL)+1);
     local_fed.mh = mycurlm;
 
@@ -224,6 +240,8 @@ int main(void) {
     assert(global_options.connecttimeout == 2000L);
     assert(streq(global_options.useragent,"feed aggregator"));
     assert(curl_multi_add_handle_count == 1);
+    assert(global_options.header_cb == header_cb);
+    assert(global_options.headerdata == global_options.writedata);
 
     begin_test("write_cb writes up to FED_MAXDATA bytes.");
     transfer_t *t = new_transfer();

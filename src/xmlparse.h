@@ -27,7 +27,7 @@ static const xmlChar *get_root_element(xmlTextReaderPtr xmlReader) {
   return root;
 }
 
-static void process_rss(fed *f, xmlTextReaderPtr r) {
+static void process_rss(transfer_t *t, xmlTextReaderPtr r) {
 
     enum  {
         PARSE_STATE_NULL,
@@ -65,7 +65,7 @@ static void process_rss(fed *f, xmlTextReaderPtr r) {
                 } else if(node_type == XML_READER_TYPE_END_ELEMENT) {
                     if(streq(tagName,"item")) {
                         state = PARSE_STATE_NULL;
-                        insert_article(f, (char*)title, (char*)link, (char*)updated);
+                        insert_article(t, (char*)title, (char*)link, (char*)updated);
                     }
                 }
             break;
@@ -97,7 +97,7 @@ static void process_rss(fed *f, xmlTextReaderPtr r) {
     }
 }
 
-static void process_atom(fed *f, xmlTextReaderPtr r) {
+static void process_atom(transfer_t *t, xmlTextReaderPtr r) {
     enum {
         PARSE_STATE_NULL,
         PARSE_STATE_PARSING_ENTRY,
@@ -136,7 +136,7 @@ static void process_atom(fed *f, xmlTextReaderPtr r) {
         }
       } else if (node_type == XML_READER_TYPE_END_ELEMENT && streq((char*)tagName, "entry")) {
           state = PARSE_STATE_NULL;
-          insert_article(f, (char*)title, (char*)link, (char*)updated);
+          insert_article(t, (char*)title, (char*)link, (char*)updated);
       }
       break;
     case PARSE_STATE_PARSING_TITLE:
@@ -159,20 +159,24 @@ static void process_atom(fed *f, xmlTextReaderPtr r) {
   }
 }
 
-static void process_response(fed *f, transfer_t *t) {
+static void process_response(transfer_t *t) {
     const xmlChar *root;
     xmlTextReaderPtr reader = xmlReaderForMemory(t->data, (int)t->cbData, t->url, NULL, xmlReaderOptions);
     
     if(notnull(reader) && notnull(root = get_root_element(reader))) {
         if(streq((char*)root, "rss")) {
-            process_rss(f, reader);
+            process_rss(t, reader);
         } else if(streq((char*)root, "feed")) {
-            process_atom(f, reader);
+            process_atom(t, reader);
         } else {
             fprintf(stderr, "%s: Could not determine feed type.\n", t->url);
         }
     } else {
         fprintf(stderr, "%s: Could not parse xml response.\n", t->url);
+    }
+
+    if(notnull(reader)) {
+        xmlFreeTextReader(reader);
     }
 }
 

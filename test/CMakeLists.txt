@@ -12,8 +12,7 @@ if(NOT MSVC)
 add_compile_options(-Wno-unused-function)
 endif()
 
-add_library(sqlite3 ../src/sqlite3.c)
-link_libraries(CURL::libcurl LibXml2::LibXml2 sqlite3)
+link_libraries(CURL::libcurl LibXml2::LibXml2 SQLite::SQLite3)
 
 add_executable(parse_args_test parse_args.c)
 add_executable(str_test str.c)

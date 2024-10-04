@@ -13,6 +13,7 @@
 
 #include "fed.h"
 #include "str.h"
+#include <stdlib.h>
 #include <stdint.h> // for intptr_t
 #include <string.h>
 #include <curl/curl.h>

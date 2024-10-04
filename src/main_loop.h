@@ -21,7 +21,9 @@ static void process_curl_events(fed *f) {
         assert(notnull(t));
         assert(msg->msg == CURLMSG_DONE);
         if(msg->data.result == CURLE_OK) {
-            process_response(f, t);
+            save_feed_details(t);
+            if(t->cbData > 0)
+                process_response(t);
         } else {
             fprintf(stderr, "%s: %s\r\n", t->url, curl_easy_strerror(msg->data.result));
         }
@@ -29,6 +31,7 @@ static void process_curl_events(fed *f) {
         free_transfer(t);
         curl_multi_remove_handle(f->mh, msg->easy_handle);
         curl_easy_cleanup(msg->easy_handle);
+        curl_slist_free_all(t->headers);
     }
 }
 

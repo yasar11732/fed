@@ -21,17 +21,12 @@
 #define FED_MAXPATH 260u
 #define FED_NUMARTICLES 32u // default value for -t switch
 #define FED_MAXURL 512
+#define FED_MAXETAG 128
 #define FED_MAXDATA 0x01000000ul
 #define FED_MAXPARALLEL 32 // If you change this, you must fix transfer_mem.h as it assumes this is 32
 
 #define FED_MAXTITLE 256
 #define FED_MAXTIMESTRING 32
-
-typedef struct {
-    size_t cbData;
-    char url[FED_MAXURL];
-    char data[FED_MAXDATA];
-} transfer_t;
 
 // program context
 typedef struct {
@@ -50,12 +45,32 @@ typedef struct {
 
 } fed;
 
+typedef struct {
+    int feed_id;
+    size_t cbData;
+    fed *fed;
+    struct curl_slist *headers;
+    char lastmodified[FED_MAXTIMESTRING];
+    char etag[FED_MAXETAG];
+    char url[FED_MAXURL];
+    char data[FED_MAXDATA];
+} transfer_t;
+
+
+
 static inline void init_fed(fed *f) {
     *f = (fed){0u, 0, ASC, NULL, NULL, NULL, {'\0'}, {'\0'}};
 }
 
 static inline void init_transfer(transfer_t *t) {
-    memset(t, 0, sizeof(*t));
+    t->feed_id = 0;
+    t->cbData = 0;
+    t->fed = NULL;
+    t->headers = NULL;
+    t->lastmodified[0] = '\0';
+    t->etag[0] = '\0';
+    t->url[0] = '\0';
+    t->data[0] = '\0';
 }
 
 #endif
