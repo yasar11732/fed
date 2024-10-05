@@ -5,23 +5,20 @@
 #include "xmlparse.h"
 #include "transfer_mem.h"
 
+
+
 static size_t header_cb(char *buffer, size_t size, size_t nitems, void *userdata) {
 
     (void)size;
 
     transfer_t *t = (transfer_t *)userdata;
-    if(nitems > 5 && (strprefix(buffer,"etag:") || strprefix(buffer,"ETag:"))) {
-        char *p = buffer+5;
-        p = stripheader(p);
-        strncpy(t->etag, p, FED_MAXETAG-1);
-        t->etag[FED_MAXETAG-1] = '\0';
+    
+    if(strprefix(buffer,"etag:") || strprefix(buffer,"ETag:")) {
+        copy_header_value(t->etag, FED_MAXETAG, buffer, nitems);
     }
 
-    if(nitems > 14 && (strprefix(buffer,"last-modified:") || strprefix(buffer,"Last-Modified:"))) {
-        char *p = buffer+14;
-        p = stripheader(p);
-        strncpy(t->lastmodified, p, FED_MAXTIMESTRING-1);
-        t->lastmodified[FED_MAXTIMESTRING-1] = '\0';
+    if(strprefix(buffer,"last-modified:") || strprefix(buffer,"Last-Modified:")) {
+        copy_header_value(t->lastmodified, FED_MAXTIMESTRING, buffer, nitems);
     }
     
     return nitems;

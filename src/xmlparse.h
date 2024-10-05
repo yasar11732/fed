@@ -3,6 +3,7 @@
 #include "fed.h"
 #include "str.h"
 #include "db.h"
+#include "rss_date_parse.h"
 #include <libxml/xmlreader.h>
 
 static const int xmlReaderOptions = (
@@ -40,6 +41,7 @@ static void process_rss(transfer_t *t, xmlTextReaderPtr r) {
     xmlChar title[FED_MAXTITLE];
     xmlChar link[FED_MAXURL];
     xmlChar updated[FED_MAXTIMESTRING];
+    char updated_sqlite_format[FED_MAXTIMESTRING];
 
     while(xmlTextReaderRead(r) == 1) {
         xmlReaderTypes node_type = xmlTextReaderNodeType(r);
@@ -65,7 +67,12 @@ static void process_rss(transfer_t *t, xmlTextReaderPtr r) {
                 } else if(node_type == XML_READER_TYPE_END_ELEMENT) {
                     if(streq(tagName,"item")) {
                         state = PARSE_STATE_NULL;
-                        insert_article(t, (char*)title, (char*)link, (char*)updated);
+                        if(date_rss_to_sqlite((char*)updated, updated_sqlite_format)) {
+                            insert_article(t, (char*)title, (char*)link, updated_sqlite_format);
+                        } else {
+                            fprintf(stderr, "%s Failed to parse rss date %s", t->url, updated);
+                        }
+                        
                     }
                 }
             break;

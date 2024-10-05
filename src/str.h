@@ -122,27 +122,43 @@ static inline bool copyurl(char * dest, const char * src) {
     return (unsigned int)res < FED_MAXURL;
 }
 
-static inline char *stripheader(char *src) {
-    char *p = src;
-    char *p2;
-    
-    // strip from start
-    while(*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n') {
-        p++;
+static inline bool isHttpSpace(char c) {
+    return (c == '\r') || (c == '\n') || (c == ' ') || (c == '\t');
+}
+
+static void copy_header_value(char *dest, size_t szDest, char *buffer, size_t szBuffer) {
+
+    char *dest_end = dest+szDest-1; // -1 for null
+    char *buffer_end = buffer+szBuffer;
+
+    while(buffer < buffer_end && *buffer != ':') {
+        buffer++;
     }
 
-    // go to end of line
-    p2 = p;
-    while(*p2 != '\r' && *p2 != '\n') {
-        p2++;
+    // skip ':'
+    if(buffer < buffer_end) {
+        buffer++;
     }
 
-    while(*p2 == ' ' || *p2 == '\t' || *p2 == '\r' || *p2 == '\n') {
-        *p2 = '\0';
-        p2--;
+    // skip initial spaces
+    while((buffer < buffer_end) && isHttpSpace(*buffer)) {
+        buffer++;
     }
 
-    return p;
+    // copy characters
+    while((buffer < buffer_end) && (dest < dest_end)) {
+        *dest++ = *buffer++;
+    }
+
+    // strip spaces at the end
+    dest--;
+    while(isHttpSpace(*dest)) {
+        dest--;
+    }
+    dest++;
+
+    // null terminate
+    *dest = '\0';
 }
 
 #endif
