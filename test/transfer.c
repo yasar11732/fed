@@ -12,6 +12,7 @@
 #include "init_program.h"
 #include "transfer_mem.h"
 #include <string.h>
+#include <curl/curl.h>
 
 fed local_fed;
 
@@ -74,6 +75,7 @@ typedef struct {
     fn_write_callback callback;
     fn_header_callback header_cb;
     
+    struct curl_slist *headers;
     long timeout;
     long followlocation;
     long autoreferer;
@@ -144,6 +146,9 @@ CURLcode curl_easy_setopt_mock(CURL *curl, CURLoption option, ...) {
         case CURLOPT_HEADERDATA:
             global_options.headerdata = va_arg(arg, void *);
             break;
+        case CURLOPT_HTTPHEADER:
+            global_options.headers = va_arg(arg, struct curl_slist *);
+            break;
         default:
             return CURLE_BAD_FUNCTION_ARGUMENT;
     }
@@ -171,6 +176,20 @@ void curl_easy_cleanup_mock(CURL *curl) {
     curl_easy_cleanup_calls++;
 }
 
+const char *etag = NULL;
+const char *last_modified = NULL;
+static bool get_feed_details_mock(transfer_t *t) {
+    if(etag) {
+        strcpy(t->etag, etag);
+    }
+
+    if(last_modified) {
+        strcpy(t->lastmodified, last_modified);
+    }
+
+    return true;
+}
+
 /*
 * Resets all global variables before a test 
 */
@@ -186,6 +205,8 @@ void begin_test(char *msg) {
     initialize_db(&local_fed);
     local_fed.fileUrls = (FILE*)(((char*)NULL)+1);
     local_fed.mh = mycurlm;
+
+    memset(&global_options, 0, sizeof(global_options));
 
     alloc_mask = 0xFFFFFFFFul;
 
@@ -205,6 +226,9 @@ void begin_test(char *msg) {
     curl_easy_init_retval = (CURL*)~p;
     curl_easy_setopt_retval = CURLE_OK;
     curl_easy_cleanup_calls = 0;
+
+    etag = NULL;
+    last_modified = NULL;
 }
 
 #undef curl_easy_setopt
@@ -215,6 +239,7 @@ void begin_test(char *msg) {
 #define fgets fgets_mock
 #define feof feof_mock
 #define fgetc fgetc_mock
+#define get_feed_details get_feed_details_mock
 
 // NOT OTHER IMPORTS BELOW HERE
 #undef FED_TRANSFER_H
@@ -225,6 +250,9 @@ int main(void) {
     
     begin_test("add_transfer sets options.");
     fgets_retval = "https://example.com";
+    etag = "\"114035110bb2bd549117d597d12644fe\"";
+    last_modified = "Sat, 14 Sep 2024 21:54:39 GMT";
+    
     bool success = add_transfer(&local_fed);
     assert(success);
     assert(streq(global_options.url, "https://example.com"));
@@ -242,6 +270,19 @@ int main(void) {
     assert(curl_multi_add_handle_count == 1);
     assert(global_options.header_cb == header_cb);
     assert(global_options.headerdata == global_options.writedata);
+    assert(global_options.headers != NULL);
+
+    struct curl_slist *chunk = global_options.headers;
+    while(chunk) {
+        if(strprefix(chunk->data,"If-None-Match:")) {
+            assert(streq(chunk->data,"If-None-Match: \"114035110bb2bd549117d597d12644fe\""));
+        } else if (strprefix(chunk->data,"If-Modified-Since:")){
+            assert(streq(chunk->data, "If-Modified-Since: Sat, 14 Sep 2024 21:54:39 GMT"));
+        } else {
+            assert(0);
+        }
+        chunk = chunk->next;
+    }
 
     begin_test("write_cb writes up to FED_MAXDATA bytes.");
     transfer_t *t = new_transfer();
@@ -251,12 +292,12 @@ int main(void) {
     size_t total_written = 0;
     size_t chunk_written = 0;
     do {
-        chunk_written = global_options.callback(buf_writecb, 1, sizeof(buf_writecb), t);
+        chunk_written = write_cb(buf_writecb, 1, sizeof(buf_writecb), t);
         total_written += chunk_written;
     } while(chunk_written == sizeof(buf_writecb));
 
     assert(t->cbData == FED_MAXDATA);
-    assert(global_options.callback(buf_writecb, 1, sizeof(buf_writecb), t) == 0);
+    assert(write_cb(buf_writecb, 1, sizeof(buf_writecb), t) == 0);
     for(size_t i = 0; i < t->cbData; i++) {
         assert(t->data[i] == buf_writecb[i % sizeof(buf_writecb)]);
     }
@@ -349,5 +390,34 @@ int main(void) {
     feof_retval = 1;
     add_transfers(&local_fed);
     assert(local_fed.runningHandles == 0);
+
+    begin_test("header_cb sets etag (lowercase)");
+    init_transfer(t);
+    char headerline1[] = "etag: W/\"66e247d9-c3d\"\r\n";
+    header_cb(headerline1, 1, sizeof(headerline1)-1, t); // header_cb does not expect null terminator
+    assert(streq(t->etag, "W/\"66e247d9-c3d\""));
+
+    begin_test("header_cb sets ETag (upppercase)");
+    init_transfer(t);
+    char headerline2[] = "ETag: \"114035110bb2bd549117d597d12644fe\"\r\n";
+    header_cb(headerline2, 1, sizeof(headerline2)-1, t); // header_cb does not expect null terminator
+    assert(streq(t->etag, "\"114035110bb2bd549117d597d12644fe\""));
+
+    begin_test("header_cb sets last-modified (lowercase)");
+    init_transfer(t);
+    char headerline3[] = "last-modified: Thu, 21 Oct 2021 19:08:55 GMT\r\n";
+    header_cb(headerline3, 1, sizeof(headerline3)-1, t); // header_cb does not expect null terminator
+    assert(streq(t->lastmodified, "Thu, 21 Oct 2021 19:08:55 GMT"));
+
+    begin_test("header_cb sets Last-Modified (Uppercase)");
+    init_transfer(t);
+    char headerline4[] = "Last-Modified: Sat, 14 Sep 2024 21:54:39 GMT\r\n";
+    header_cb(headerline4, 1, sizeof(headerline4)-1, t); // header_cb does not expect null terminator
+    assert(streq(t->lastmodified, "Sat, 14 Sep 2024 21:54:39 GMT"));
+
+    begin_test("add_transfer sets etag and last modified headers");
+
+    add_transfer(&local_fed);
+
 
 }
