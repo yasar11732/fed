@@ -369,7 +369,7 @@ static bool parse_rss_date(parse_ctx *ctx)
     }
 
     return ctx->success;
-};
+}
 
 
 bool date_rss_to_sqlite(const char *rssdate, char *sqlitedate)

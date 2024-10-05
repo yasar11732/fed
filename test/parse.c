@@ -93,7 +93,7 @@ int main() {
     local_t.cbData = sizeof(xml1);
     expected_titles[0] = "A journey through KiUserExceptionDispatcher";
     expected_links[0] = "https://momo5502.com/posts/2024-09-07-a-journey-through-kiuserexceptiondispatcher/";
-    expected_updated[0] = "Sat, 07 Sep 2024 00:00:00 +0000";
+    expected_updated[0] = "2024-09-07T00:00:00+00:00";
     process_response(&local_t);
     assert(insert_article_calls == 1);
 
