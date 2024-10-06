@@ -6,6 +6,7 @@
 #include "db.h"
 #include "sqlite3.h"
 #include <assert.h>
+#include <stdlib.h>
 
 int main(void) {
     sqlite3_stmt *res;
@@ -169,6 +170,30 @@ int main(void) {
     rowcount = sqlite3_column_int(res, 0);
     assert(rowcount == 6);
     sqlite3_finalize(res);
+
+    transfer_t *t = malloc(sizeof(*t));
+    init_transfer(t);
+    t->fed = &f;
+    strcpy(t->url, "https://test-feed.com/feed.xml");
+    get_feed_details(t);
+    assert(t->feed_id > 0);
+    strcpy(t->etag,"\"1q2w3e4r\"");
+    strcpy(t->lastmodified, "Thu, 12 Oct 2023 09:12:34 GMT");
+    
+    int saved_id = t->feed_id;
+
+    save_feed_details(t);
+    
+    init_transfer(t);
+    t->fed = &f;
+    strcpy(t->url, "https://test-feed.com/feed.xml");
+    get_feed_details(t);
+    assert(t->feed_id == saved_id);
+    assert(streq(t->etag, "\"1q2w3e4r\""));
+    assert(streq(t->lastmodified, "Thu, 12 Oct 2023 09:12:34 GMT"));
+
+    bool b= insert_article(t,"title","link","2023-10-12T09:12:34+05:00");
+    assert(b);
 
     sqlite3_close(f.conSqlite);
 }

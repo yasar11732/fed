@@ -31,7 +31,7 @@ int main() {
     // probably never used in reality.
     date_rss_to_sqlite("Thu,\t12\tOct\t2023\t09:12:34\t+0500", sqlitedate);
     assert(streq(sqlitedate,"2023-10-12T09:12:34+05:00"));
-    
+
     /*
     * TIMEZONE TESTS
     */

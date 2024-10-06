@@ -6,6 +6,8 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
+
 int main(void)
 {
     printf("TESTING streq ");
@@ -66,10 +68,16 @@ int main(void)
     assert(!pathncat(buf, 2, "veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryvery","veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryvery"));
     assert(buf[FED_MAXPATH] == 'x');
 
-    puts("Test pathncat doesn't start empty string with seperator");
+    
     buf[0] = '\0';
+    memset(&buf[1], 'X', sizeof(buf)-1);
     assert(pathncat(buf, 2, "first","second"));
+    puts("Test pathncat doesn't start empty string with seperator");
     assert(strprefix(buf, "first"));
+    puts("Test pathncat seperates components with path seperator");
+    assert(buf[5] == PATH_SEP);
+    puts("Test pathncat null terminates");
+    assert(buf[12] == '\0');
 
     puts("Test copyurl fails with too long string.");
     char copyurllongbuff[FED_MAXURL * 2];
@@ -90,6 +98,31 @@ int main(void)
     stripfilename(longpathname);
     assert(longpathname[320] == PATH_SEP);
 
+    puts("copy_header_value doesn't overrun destination buffer");
+    char *cp_header_buf = malloc(32);
+    memset(cp_header_buf, '~', 32);
+    copy_header_value(cp_header_buf, 16, "ETag: 0123456789ABCDEF0123456789ABCDEF\r\n", 40);
+    assert(streq(cp_header_buf, "0123456789ABCDE"));
+    for(size_t i = 16; i < 32; i++) {
+        assert(cp_header_buf[i] == '~');
+    }
 
+    puts("copy_header_value doesn't overrun source buffer");
+    memset(cp_header_buf, '~', 32);
+    copy_header_value(cp_header_buf, 32, "ETag: 0123456789ABCDEF0123456789ABCDEF\r\n", 12);
+    assert(streq(cp_header_buf, "012345"));
+    for(size_t i = 7; i < 32; i++) {
+        assert(cp_header_buf[i] == '~');
+    }
+    memset(cp_header_buf, '~', 32);
+    copy_header_value(cp_header_buf, 32, "X-Very-Long-Header-Value: 0123456789ABCDEF0123456789ABCDEF\r\n", 12);
+    assert(streq(cp_header_buf, ""));
+    
+    puts("copy_header_value strips spaces");
+    memset(cp_header_buf, '~', 32);
+    copy_header_value(cp_header_buf, 32, "ETag: 0123456789ABCDEF \r\n", 25);
+    assert(streq(cp_header_buf, "0123456789ABCDEF"));
+    copy_header_value(cp_header_buf, 32, "ETag:\t0123456789ABCDEF\t\r\n", 25);
+    assert(streq(cp_header_buf, "0123456789ABCDEF"));
     return 0;
 }

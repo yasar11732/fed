@@ -65,6 +65,8 @@ static inline bool pathncat(char *dest, size_t argc, ...)
 
         size_t len_src = strlen(src);
         
+        // this is intentionally not (less than or equal to)
+        // it reserve space for path seperator
         if(len_src < left) {
 
             /*
@@ -88,7 +90,9 @@ static inline bool pathncat(char *dest, size_t argc, ...)
         }
     }
     
-    *pos = '\0';
+    // strcpy adds null terminator
+    // no need to add again
+    // *pos = '\0';
 
     va_end(argv);
 
