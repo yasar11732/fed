@@ -25,16 +25,25 @@ int main(void) {
             assert(returned_transfers[i] != returned_transfers[k]);
         }
     }
-
+    puts("Test allocation more return null");
+    assert(new_transfer() == NULL);
+    
     puts("Test freeing all resets alloc mask");
     for(size_t i = 0; i < FED_MAXPARALLEL; i++) {
         free_transfer(returned_transfers[i]);
     }
     assert(alloc_mask == 0xFFFFFFFF);
 
-    puts("Test too long url fails.");
-    char url[2*FED_MAXURL];
-    memset(url, 'x', (2*FED_MAXURL)-1);
-    url[(2*FED_MAXURL)-1] = '\0';
-
+    puts("Test returned value is cleared.");
+    // make sure all available transfers are used first
+    for(size_t i = 0; i < FED_MAXPARALLEL; i++) {
+        returned_transfers[i] = new_transfer();
+        assert(notnull(returned_transfers[i]));
+    }
+    returned_transfers[0]->cbData = 42;
+    free_transfer(returned_transfers[0]);
+    // this will return the same one we freed
+    // because there isn't another free transfer
+    returned_transfers[0] = new_transfer();
+    assert(returned_transfers[0]->cbData == 0);
 }

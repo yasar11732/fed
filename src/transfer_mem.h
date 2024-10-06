@@ -29,15 +29,19 @@ static inline uint32_t setBit(uint32_t val, unsigned int bit) {
 static transfer_t *new_transfer(void) {
 
     unsigned int bit;
-    for(bit = 0; bit < 32; bit++) {
+
+    if(alloc_mask == 0)
+        return NULL;
+
+    for(bit = 0; bit < 32; bit++) { // LCOV_EXCL_LINE
 		if(isBitSet(alloc_mask, bit)) {
             alloc_mask = unsetBit(alloc_mask, bit);
-            transfer_pool[bit].cbData = 0;
+            init_transfer(&transfer_pool[bit]);
             return &transfer_pool[bit];
 		}
 	}
-
-    return NULL;
+    // not reachable, added to make compiler happy
+    return NULL; // LCOV_EXCL_LINE
 }
 
 static void free_transfer(transfer_t *t) {

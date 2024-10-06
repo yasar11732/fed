@@ -73,6 +73,7 @@ token_t next_token(parse_ctx *ctx) {
     // End of input
     if(ctx->data[ctx->i] == '\0') {
         tok.len = -1;
+        tok.str = NULL;
         return tok;
     }
 
@@ -120,26 +121,18 @@ static void rss_parse_zone(parse_ctx *ctx)
 
     bool match = true;
 
-    if (tokeq(tok,"UT")) {
+    if (tokeq(tok,"UT") || tokeq(tok,"GMT")) {
         // empty
-    } else if (tokeq(tok,"GMT")) {
-        // empty
-    } else if (tokeq(tok,"EST")) {
-        ctx->zone_h = -5;
     } else if (tokeq(tok,"EDT")) {
         ctx->zone_h = -4;
-    } else if (tokeq(tok,"CST")) {
-        ctx->zone_h = -6;
-    } else if (tokeq(tok,"CDT")) {
+    } else if (tokeq(tok,"EST") || tokeq(tok,"CDT")) {
         ctx->zone_h = -5;
-    } else if (tokeq(tok,"MST")) {
-        ctx->zone_h = -7;
-    } else if (tokeq(tok,"MDT")){
+    } else if (tokeq(tok,"CST") || tokeq(tok,"MDT")) {
         ctx->zone_h = -6;
+    } else if (tokeq(tok,"MST") || tokeq(tok,"PDT")) {
+        ctx->zone_h = -7;
     } else if (tokeq(tok,"PST")) {
         ctx->zone_h = -8;
-    } else if (tokeq(tok,"PDT")) {
-        ctx->zone_h = -7;
     } else {
         match = false;
     }

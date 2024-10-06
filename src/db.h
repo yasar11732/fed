@@ -123,14 +123,14 @@ static bool get_feed_details(transfer_t *t) {
     if(success) {
         const char *val = (const char *)sqlite3_column_text(stmt,1);
         if(notnull(val)) {
-            strcpy(t->etag, val);
+            strncpy(t->etag, val, FED_MAXETAG);
         }
     }
 
     if(success) {
         const char *val = (const char *)sqlite3_column_text(stmt,2);
         if(notnull(val)) {
-            strcpy(t->lastmodified, val);
+            strncpy(t->lastmodified, val, FED_MAXTIMESTRING);
         }
     }
 
