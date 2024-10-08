@@ -1,8 +1,8 @@
 /*
-* Order of imports is very important here.
-* We don't want to override standard library
-* definitions with our mocks.
-*/
+ * SPDX-FileCopyrightText: 2024 Yaşar Arabacı <yasar11732@gmail.com>
+ *
+ * SPDX-License-Identifier: MIT
+ */
 
 // important for assert to work
 #ifdef NDEBUG

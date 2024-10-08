@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2024 Yaşar Arabacı <yasar11732@gmail.com>
+#
+# SPDX-License-Identifier: MIT
+
 ﻿cmake_minimum_required (VERSION 3.15)
 
 set(CMAKE_C_STANDARD 99)

@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Yaşar Arabacı <yasar11732@gmail.com>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 #include "rss_date_parse.h"
 
 int main() {

@@ -1,8 +1,14 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Yaşar Arabacı <yasar11732@gmail.com>
+ *
+ * SPDX-License-Identifier: MIT
+ */
 
 #include "fed.h"
 #include "parse_args.h"
 #include "init_program.h"
 #include "transfer.h"
+#include "IWriter.h"
 #include "main_loop.h"
 
 #include <stdio.h>
@@ -33,7 +39,7 @@ int main(int argc, char *argv[])
         
         add_transfers(&f);
         main_loop(&f);
-
+        output_articles(&f, &Writers[TXT_WRITER]);
     } else if(f.fileUrls == NULL) {
         (void)fputs("Unable to locate or open the URLs file. Ensure that "
 #ifdef ON_WINDOWS

@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Yaşar Arabacı <yasar11732@gmail.com>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef FED_SETTINGS_H
 #define FED_SETTINGS_H
 
@@ -59,7 +65,14 @@ typedef struct {
 
 
 static inline void init_fed(fed *f) {
-    *f = (fed){0u, 0, ASC, NULL, NULL, NULL, {'\0'}, {'\0'}};
+    f->numListed = 0;
+    f->runningHandles = 0;
+    f->orderListed = ASC;
+    f->fileUrls = NULL;
+    f->conSqlite = NULL;
+    f->mh = NULL;
+    f->pathUrls[0] = '\0';
+    f->pathDB[0] = '\0';
 }
 
 static inline void init_transfer(transfer_t *t) {

@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Yaşar Arabacı <yasar11732@gmail.com>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef FED_PARSE_H
 #define FED_PARSE_H
 #include "fed.h"

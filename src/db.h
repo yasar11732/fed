@@ -1,7 +1,16 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Yaşar Arabacı <yasar11732@gmail.com>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef FED_DB_H
 #define FED_DB_H
+
 #include "fed.h"
 #include "str.h"
+#include "IWriter.h"
+
 #include <stdbool.h>
 #include <assert.h>
 
@@ -208,5 +217,20 @@ static bool insert_article(transfer_t *t, char *title, char *link, char *updated
 
 }
 
+static void output_articles(fed *f, const IWriter *w) {
+    w->open(f);
+
+    sqlite3_stmt *query;
+    sqlite3_prepare(f->conSqlite, "SELECT title, url, updated FROM articles ORDER BY updated DESC Limit 10", -1, &query, NULL);
+    while(sqlite3_step(query) == SQLITE_ROW) {
+        const char *title = (char*)sqlite3_column_text(query, 0);
+        const char *link = (char*)sqlite3_column_text(query, 1);
+        const char *updated = (char*)sqlite3_column_text(query, 2);
+        w->write(f, title, link, updated);
+    }
+    sqlite3_finalize(query);
+
+    w->close(f);
+}
 
 #endif

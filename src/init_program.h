@@ -1,3 +1,9 @@
+/*
+ * SPDX-FileCopyrightText: 2024 Yaşar Arabacı <yasar11732@gmail.com>
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
 #ifndef FED_INIT_PROGRAM
 #define FED_INIT_PROGRAM
 
