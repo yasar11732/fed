@@ -8,7 +8,7 @@
 #undef NDEBUG
 #endif
 
-// prevent premature inclusion of transer.h
+// prevent premature inclusion of transfer.h
 #define FED_TRANSFER_H 
 
 #include <assert.h>
@@ -403,7 +403,7 @@ int main(void) {
     header_cb(headerline1, 1, sizeof(headerline1)-1, t); // header_cb does not expect null terminator
     assert(streq(t->etag, "W/\"66e247d9-c3d\""));
 
-    begin_test("header_cb sets ETag (upppercase)");
+    begin_test("header_cb sets ETag (uppercase)");
     init_transfer(t);
     char headerline2[] = "ETag: \"114035110bb2bd549117d597d12644fe\"\r\n";
     header_cb(headerline2, 1, sizeof(headerline2)-1, t); // header_cb does not expect null terminator

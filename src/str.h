@@ -72,7 +72,7 @@ static inline bool pathncat(char *dest, size_t argc, ...)
         size_t len_src = strlen(src);
         
         // this is intentionally not (less than or equal to)
-        // it reserve space for path seperator
+        // it reserve space for path separator
         if(len_src < left) {
 
             /*

@@ -78,9 +78,9 @@ int main(void)
     buf[0] = '\0';
     memset(&buf[1], 'X', sizeof(buf)-1);
     assert(pathncat(buf, 2, "first","second"));
-    puts("Test pathncat doesn't start empty string with seperator");
+    puts("Test pathncat doesn't start empty string with separator");
     assert(strprefix(buf, "first"));
-    puts("Test pathncat seperates components with path seperator");
+    puts("Test pathncat separates components with path separator");
     assert(buf[5] == PATH_SEP);
     puts("Test pathncat null terminates");
     assert(buf[12] == '\0');

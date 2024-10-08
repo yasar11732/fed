@@ -16,7 +16,7 @@ static const int xmlReaderOptions = (
     XML_PARSE_RECOVER | // recover on errors
     XML_PARSE_NOCDATA | // merge cdata as text nodes
     XML_PARSE_NOBLANKS| // remove blank nodes
-    XML_PARSE_NOENT   | // substitue entities
+    XML_PARSE_NOENT   | // substitute entities
     XML_PARSE_NONET   | // forbid network access
     0
 );
