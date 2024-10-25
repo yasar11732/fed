@@ -57,5 +57,7 @@ int main(int argc, char *argv[])
         ", try deleting %s and resync your feeds", f.pathDB);
     }
 
+    fclose(stdout);
+    fclose(stderr);
     return 0;
 }

@@ -66,7 +66,7 @@ const char *months[] = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","O
 // this is technically not correct, but good enough for parsing
 // date format
 static inline bool isRssDelim(char c) {
-    return (c == ' ') || (c == '\t') || (c == '\0');
+    return (c == ' ') || (c == '\t');
 }
 
 static inline bool tokeq(token_t tok, const char *s1) {
@@ -85,13 +85,15 @@ token_t next_token(parse_ctx *ctx) {
 
     tok.str = &ctx->data[ctx->i];
     tok.len = 0;
-    while(!isRssDelim(ctx->data[ctx->i])) {
+    while(ctx->data[ctx->i] && !isRssDelim(ctx->data[ctx->i])) {
         tok.len++;
         ctx->i++;
     }
 
     // skip delimiter for next call
-    ctx->i++;
+    if (isRssDelim(ctx->data[ctx->i]))
+        ctx->i++;
+
     return tok;
 }
 

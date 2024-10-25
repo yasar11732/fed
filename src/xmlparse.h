@@ -18,6 +18,10 @@ static const int xmlReaderOptions = (
     XML_PARSE_NOBLANKS| // remove blank nodes
     XML_PARSE_NOENT   | // substitute entities
     XML_PARSE_NONET   | // forbid network access
+#ifdef FUZZ
+    XML_PARSE_NOERROR |
+    XML_PARSE_NOWARNING |
+#endif
     0
 );
 
@@ -76,7 +80,9 @@ static void process_rss(transfer_t *t, xmlTextReaderPtr r) {
                         if(date_rss_to_sqlite((char*)updated, updated_sqlite_format)) {
                             insert_article(t, (char*)title, (char*)link, updated_sqlite_format);
                         } else {
+#ifndef FUZZ
                             fprintf(stderr, "%s Failed to parse rss date %s", t->url, updated);
+#endif
                         }
                         
                     }
@@ -143,9 +149,12 @@ static void process_atom(transfer_t *t, xmlTextReaderPtr r) {
           state = PARSE_STATE_PARSING_UPDATED;
         } else if (streq((char*)tagName, "link")) {
           xmlChar *_link = xmlTextReaderGetAttribute(r, (xmlChar*)"href");
-          strncpy((char*)link, (char*)_link, FED_MAXURL-1);
-          link[FED_MAXURL-1] = '\0';
-          xmlFree(_link);
+          if(_link) {
+            strncpy((char*)link, (char*)_link, FED_MAXURL-1);
+            link[FED_MAXURL-1] = '\0';
+            xmlFree(_link);
+          }
+
         }
       } else if (node_type == XML_READER_TYPE_END_ELEMENT && streq((char*)tagName, "entry")) {
           state = PARSE_STATE_NULL;
@@ -182,10 +191,14 @@ static void process_response(transfer_t *t) {
         } else if(streq((char*)root, "feed")) {
             process_atom(t, reader);
         } else {
+#ifndef FUZZ
             fprintf(stderr, "%s: Could not determine feed type.\n", t->url);
+#endif
         }
     } else {
+#ifndef FUZZ
         fprintf(stderr, "%s: Could not parse xml response.\n", t->url);
+#endif
     }
 
     if(notnull(reader)) {
